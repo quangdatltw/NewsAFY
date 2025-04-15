@@ -16,6 +16,11 @@ export class VnexpressNewsController {
     return await this.vnexpressNewsService.getBodyText(getNewDto);
   }
 
+  @Get('/rss')
+  getRSS() {
+    return this.vnexpressNewsService.getRSS();
+  }
+
   @Get()
   findAll() {
     return this.vnexpressNewsService.findAll();

@@ -32,6 +32,7 @@ $ npm run start:dev
 
 ### VnExpress
 
+- `GET /news/vnexpress/rss`: Returns main RSS.
 - `GET /news/vnexpress/body-html`: Returns news data with HTML article body.
 - `GET /news/vnexpress/body-text`: Returns news data with plain text article body.
 
@@ -44,6 +45,7 @@ $ npm run start:dev
 
 ### DanTri
 
+- `GET /news/dantri/rss`: Returns main RSS.
 - `GET /news/dantri/body-html`: Returns news data with HTML article body.
 - `GET /news/dantri/body-text`: Returns news data with plain text article body.
 

@@ -63,6 +63,10 @@ export class VnexpressNewsService {
     return $article;
   }
 
+  getRSS() {
+    return 'https://vnexpress.net/rss/tin-moi-nhat.rss';
+  }
+
   findAll() {
     return `This action returns all vnexpressNews`;
   }

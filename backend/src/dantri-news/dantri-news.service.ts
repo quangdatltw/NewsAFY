@@ -59,6 +59,10 @@ export class DantriNewsService {
     return $article;
   }
 
+  getRSS() {
+    return 'https://dantri.com.vn/rss/home.rss';
+  }
+
   findAll() {
     return `This action returns all dantriNews`;
   }

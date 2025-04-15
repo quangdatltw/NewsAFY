@@ -16,6 +16,11 @@ export class DantriNewsController {
     return await this.dantriNewsService.getBodyText(getNewDto);
   }
 
+  @Get('/rss')
+  getRSS() {
+    return this.dantriNewsService.getRSS();
+  }
+
   @Get()
   findAll() {
     return this.dantriNewsService.findAll();
