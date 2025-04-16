@@ -38,8 +38,8 @@ export class DantriNewsService {
 
   getSideData($: cheerio.CheerioAPI) {
     const $date = $('div.author-wrap div.author-meta time.author-time');
-    const $title = $('h1.title-page.detail');
-    const $description = $('h2.singular-sapo');
+    const $title = $('h1');
+    const $description = $('h2');
     const $author = $('div.author-wrap div.author-meta div.author-name');
     const audioLinkResult = this.tryGetAudioLink($, $date.text().trim());
 
@@ -64,10 +64,13 @@ export class DantriNewsService {
   }
 
   getBody($: cheerio.CheerioAPI) {
-    const $article = $('div.singular-content');
-    $article.find('figure').remove();
+    const $body = $('div.singular-content').length
+      ? $('div.singular-content')
+      : $('div.e-magazine__body');
 
-    return $article;
+    $body.find('figure').remove();
+
+    return $body;
   }
 
   getRSS() {
