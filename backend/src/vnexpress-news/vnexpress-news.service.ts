@@ -39,7 +39,7 @@ export class VnexpressNewsService {
     const $date = $('span.date');
     const $title = $('h1.title-detail');
     const $description = $('p.description');
-    const $author = $('article.fck_detail p strong');
+    const $author = $('article.fck_detail p[style="text-align:right;"]');
 
     return {
       title: $title.text().trim(),
