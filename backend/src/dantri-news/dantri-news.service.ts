@@ -41,15 +41,26 @@ export class DantriNewsService {
     const $title = $('h1.title-page.detail');
     const $description = $('h2.singular-sapo');
     const $author = $('div.author-wrap div.author-meta div.author-name');
+    const audioLinkResult = this.tryGetAudioLink($, $date.text().trim());
 
-    return {
+    const sideData = {
       title: $title.text().trim(),
       description: $description.text().trim(),
       metadata: {
         author: $author.text().trim(),
         date: $date.text().trim(),
+        audioUrl: undefined,
       },
     };
+
+    if (audioLinkResult.success) {
+      sideData.metadata = {
+        ...sideData.metadata,
+        audioUrl: audioLinkResult.url,
+      };
+    }
+
+    return sideData;
   }
 
   getBody($: cheerio.CheerioAPI) {
@@ -61,6 +72,39 @@ export class DantriNewsService {
 
   getRSS() {
     return 'https://dantri.com.vn/rss/home.rss';
+  }
+
+  tryGetAudioLink(
+    $: cheerio.CheerioAPI,
+    date: string,
+  ): { success: boolean; url?: string } {
+    const articleId = $('div[data-module="article-audio-new"]').attr(
+      'data-article-id',
+    );
+
+    if (articleId == undefined) return { success: false };
+
+    const input = date;
+    const match = input.match(/(\d{2})\/(\d{2})\/(\d{4})/);
+
+    if (!match) return { success: false };
+
+    const day = parseInt(match[1], 10);
+    const month = parseInt(match[2], 10);
+    const year = match[3];
+
+    const url =
+      'https://acdn.dantri.com.vn/' +
+      year +
+      '/' +
+      month +
+      '/' +
+      day +
+      '/' +
+      articleId +
+      '/full_1.mp3';
+
+    return { success: true, url: url };
   }
 
   findAll() {
