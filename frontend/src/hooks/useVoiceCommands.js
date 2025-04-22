@@ -1,37 +1,48 @@
 "use client"
 
 import {useCallback, useEffect, useState} from "react"
-
+import {commandSelector} from "../services/commandSelector" // Import commandSelector
 export const useVoiceCommands = ({commands, continuous = true}) => {
     const [isListening, setIsListening] = useState(false)
     const [transcript, setTranscript] = useState("")
+    const [recognition, setRecognition] = useState(null)
 
-    // Check if the browser supports speech recognition
-    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition
-    const recognition = SpeechRecognition ? new SpeechRecognition() : null
+    const createRecognition = useCallback(() => {
+        const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition
+        if (!SpeechRecognition) return null
+
+        const newRecognition = new SpeechRecognition()
+        newRecognition.continuous = continuous
+        newRecognition.interimResults = false
+        newRecognition.lang = "vi-VN"
+
+        return newRecognition
+    }, [continuous])
 
     const processCommand = useCallback(
-        (transcript) => {
-            const lowerTranscript = transcript.toLowerCase().trim()
+        async (transcript) => {
+            let lowerTranscript = transcript.toLowerCase().trim()
+            console.log(lowerTranscript)
 
-            // Check for exact matches first
-            if (commands[lowerTranscript]) {
-                commands[lowerTranscript]()
-                return true
+            // Replace specific words in the transcript
+            const wordReplacements = {
+                "học": "đọc",
+                // Add more replacements as needed
             }
+            lowerTranscript = lowerTranscript.split(" ").map(word => wordReplacements[word] || word).join(" ")
+            console.log(lowerTranscript)
 
-            // Check for wildcard commands
-            for (const command in commands) {
-                if (command.includes("*")) {
-                    const parts = command.split("*")
-                    const prefix = parts[0].trim().toLowerCase()
+            try {
+                const selectedCommand = await commandSelector(lowerTranscript)
+                if (selectedCommand) {
+                    console.log("Executing command:", selectedCommand)
+                    console.log("Executing command:", commands[selectedCommand] + "()")
 
-                    if (lowerTranscript.startsWith(prefix)) {
-                        const parameter = lowerTranscript.substring(prefix.length).trim()
-                        commands[command](parameter)
-                        return true
-                    }
+                    commands[selectedCommand]()
+                    return true
                 }
+            } catch (error) {
+                console.error("Error processing command:", error)
             }
 
             return false
@@ -40,51 +51,70 @@ export const useVoiceCommands = ({commands, continuous = true}) => {
     )
 
     const setupRecognition = useCallback(() => {
-        if (!recognition) return
+        const rec = createRecognition()
+        if (!rec) return
 
-        recognition.continuous = continuous
-        recognition.interimResults = false
-        recognition.lang = "vi-VN" // Set language to Vietnamese
-
-        recognition.onstart = () => {
+        rec.onstart = () => {
             setIsListening(true)
         }
 
-        recognition.onend = () => {
+        rec.onend = () => {
             if (continuous && isListening) {
-                recognition.start()
+                try {
+                    rec.start()
+                } catch (error) {
+                    console.error("Failed to restart recognition:", error)
+                    setIsListening(false)
+                }
             } else {
                 setIsListening(false)
             }
         }
 
-        recognition.onresult = (event) => {
-            const current = event.resultIndex
+        rec.onresult = (event) => {
+            const current = event.results.length - 1
             const result = event.results[current][0].transcript
             setTranscript(result)
             processCommand(result)
         }
 
-        recognition.onerror = (event) => {
+        rec.onerror = (event) => {
             console.error("Lỗi nhận dạng giọng nói", event.error)
             setIsListening(false)
         }
-    }, [recognition, continuous, isListening, processCommand])
+
+        setRecognition(rec)
+        return rec
+    }, [continuous, isListening, processCommand, createRecognition])
 
     const toggleListening = useCallback(() => {
-        if (!recognition) {
-            alert("Trình duyệt của bạn không hỗ trợ nhận dạng giọng nói.")
-            return
-        }
-
-        if (isListening) {
+        if (isListening && recognition) {
             recognition.stop()
             setIsListening(false)
         } else {
-            recognition.start()
-            setIsListening(true)
+            const rec = recognition || setupRecognition()
+            if (!rec) {
+                alert("Trình duyệt của bạn không hỗ trợ nhận dạng giọng nói.")
+                return
+            }
+
+            try {
+                rec.start()
+                setIsListening(true)
+            } catch (error) {
+                console.error("Failed to start recognition:", error)
+                // Create a new instance and try again
+                const newRec = setupRecognition()
+                if (newRec) {
+                    try {
+                        newRec.start()
+                    } catch (e) {
+                        alert("Không thể kích hoạt nhận dạng giọng nói.")
+                    }
+                }
+            }
         }
-    }, [recognition, isListening])
+    }, [recognition, isListening, setupRecognition])
 
     useEffect(() => {
         setupRecognition()
@@ -94,7 +124,7 @@ export const useVoiceCommands = ({commands, continuous = true}) => {
                 recognition.stop()
             }
         }
-    }, [setupRecognition, recognition, isListening])
+    }, [])
 
     return {
         isListening,

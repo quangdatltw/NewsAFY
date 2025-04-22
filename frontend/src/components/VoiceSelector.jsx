@@ -1,15 +1,21 @@
 "use client"
 
 const VoiceSelector = ({voices, currentVoice, onVoiceChange}) => {
+    // Lọc chỉ giữ giọng nói tiếng Việt và tiếng Anh
+    const filteredVoices = voices.filter(voice => {
+        const langCode = voice.lang.split("-")[0]; // Lấy mã ngôn ngữ chính (vi, en)
+        return langCode === "vi" || langCode === "en";
+    });
+
     // Nhóm giọng nói theo ngôn ngữ
-    const groupedVoices = voices.reduce((groups, voice) => {
-        const lang = voice.lang.split("-")[0] // Lấy mã ngôn ngữ chính (vi, en, etc.)
+    const groupedVoices = filteredVoices.reduce((groups, voice) => {
+        const lang = voice.lang.split("-")[0];
         if (!groups[lang]) {
-            groups[lang] = []
+            groups[lang] = [];
         }
-        groups[lang].push(voice)
+        groups[lang].push(voice);
         return groups
-    }, {})
+    }, {});
 
     // Sắp xếp các nhóm ngôn ngữ, đưa tiếng Việt lên đầu
     const sortedLanguages = Object.keys(groupedVoices).sort((a, b) => {

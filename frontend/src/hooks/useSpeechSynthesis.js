@@ -1,12 +1,13 @@
 "use client"
 
-import {useCallback, useEffect, useState} from "react"
+import {useCallback, useEffect, useRef, useState} from "react"
 
 export const useSpeechSynthesis = () => {
     const [voices, setVoices] = useState([])
     const [currentVoice, setCurrentVoice] = useState(null)
     const [speaking, setSpeaking] = useState(false)
     const [availableVoicesLoaded, setAvailableVoicesLoaded] = useState(false)
+    const utteranceRef = useRef(null)
 
     // Load available voices
     useEffect(() => {
@@ -16,11 +17,6 @@ export const useSpeechSynthesis = () => {
             if (availableVoices.length > 0) {
                 setVoices(availableVoices)
                 setAvailableVoicesLoaded(true)
-
-                console.log(
-                    "Tất cả các giọng có sẵn:",
-                    availableVoices.map((v) => `${v.name} (${v.lang})`),
-                )
 
                 // Tìm giọng tiếng Việt theo thứ tự ưu tiên
                 const vietnameseVoice =
@@ -50,62 +46,64 @@ export const useSpeechSynthesis = () => {
         }
     }, [])
 
-    // Handle speaking state changes
-    useEffect(() => {
-        const handleSpeakingEnd = () => {
-            setSpeaking(false)
-        }
-
-        window.speechSynthesis.addEventListener("end", handleSpeakingEnd)
-
-        return () => {
-            window.speechSynthesis.removeEventListener("end", handleSpeakingEnd)
-        }
-    }, [])
-
-    // Speak function
-    const speak = useCallback(
-        (text) => {
-            // Cancel any ongoing speech
-            stop()
-
-            if (!text) return
-
-            const utterance = new SpeechSynthesisUtterance(text)
-
-            if (currentVoice) {
-                utterance.voice = currentVoice
-                utterance.lang = currentVoice.lang // Sử dụng ngôn ngữ của giọng đã chọn
-            } else {
-                utterance.lang = "vi-VN" // Fallback to Vietnamese
-            }
-
-            utterance.rate = 1.0
-            utterance.pitch = 1.0
-            utterance.volume = 1.0
-
-            utterance.onstart = () => setSpeaking(true)
-            utterance.onend = () => setSpeaking(false)
-            utterance.onerror = (e) => {
-                console.error("Lỗi phát âm:", e)
-                setSpeaking(false)
-            }
-
-            window.speechSynthesis.speak(utterance)
-        },
-        [currentVoice],
-    )
-
     // Stop function
     const stop = useCallback(() => {
         window.speechSynthesis.cancel()
         setSpeaking(false)
     }, [])
 
+    // Speak function
+    const speak = useCallback(
+        (text) => {
+            // Always cancel any ongoing speech first
+            stop()
+
+            if (!text) return
+
+            // Add a small delay before starting new speech
+            setTimeout(() => {
+                const utterance = new SpeechSynthesisUtterance(text)
+
+                if (currentVoice) {
+                    utterance.voice = currentVoice
+                    utterance.lang = currentVoice.lang // Sử dụng ngôn ngữ của giọng đã chọn
+                } else {
+                    utterance.lang = "vi-VN" // Fallback to Vietnamese
+                }
+
+                utterance.rate = 1.0
+                utterance.pitch = 1.0
+                utterance.volume = 1.0
+
+                // Store reference to current utterance
+                utteranceRef.current = utterance
+
+                utterance.onstart = () => setSpeaking(true)
+                utterance.onend = () => setSpeaking(false)
+                utterance.onerror = (e) => {
+                    console.error("Lỗi phát âm:", e)
+                    setSpeaking(false)
+                }
+
+                window.speechSynthesis.speak(utterance)
+            }, 400);
+        },
+        [currentVoice, stop],
+    )
+
     // Set voice function
     const setVoice = useCallback((voice) => {
         console.log("Đã thay đổi giọng thành:", voice.name, voice.lang)
         setCurrentVoice(voice)
+    }, [])
+
+    // Cleanup on unmount
+    useEffect(() => {
+        return () => {
+            if (window.speechSynthesis && window.speechSynthesis.speaking) {
+                window.speechSynthesis.cancel()
+            }
+        }
     }, [])
 
     return {

@@ -34,7 +34,7 @@ const sampleNewsData = [
         content:
             "Một nhóm các nhà khoa học quốc tế đã phát hiện ra một loài ếch cây mới trong rừng Amazon. Loài này, có tên là Hyla amazonica, có những đặc điểm thích nghi độc đáo cho phép nó thay đổi màu sắc dựa trên điều kiện môi trường.",
         url: "https://example.com/news/science/new-species",
-        urlToImage: "https://via.placeholder.com/600x400?text=Rừng+Amazon",
+        urlToImage: "https://www.techsmith.com/blog/wp-content/uploads/2023/08/What-are-High-Resolution-Images.png",
         publishedAt: "2023-04-15T08:30:00Z",
         source: {
             name: "Khoa Học Hàng Ngày",
@@ -46,7 +46,7 @@ const sampleNewsData = [
         content:
             "Tại hội nghị TechWorld năm nay, các công ty công nghệ lớn đã giới thiệu các công cụ AI mới được thiết kế để chuyển đổi các ngành từ chăm sóc sức khỏe đến giao thông vận tải. Thông báo đáng chú ý nhất là hệ thống AI có khả năng dự đoán điểm yếu cấu trúc trong các tòa nhà với độ chính xác 99%.",
         url: "https://example.com/news/technology/ai-tools",
-        urlToImage: "https://via.placeholder.com/600x400?text=Hội+Nghị+Công+Nghệ",
+        urlToImage: "https://www.techsmith.com/blog/wp-content/uploads/2023/08/What-are-High-Resolution-Images.png",
         publishedAt: "2023-04-14T14:15:00Z",
         source: {
             name: "Công Nghệ Insider",
@@ -59,7 +59,7 @@ const sampleNewsData = [
         content:
             "Một nghiên cứu toàn diện với hơn 10.000 người tham gia đã phát hiện ra rằng chỉ cần 30 phút tập thể dục vừa phải ba lần một tuần có thể giảm các triệu chứng trầm cảm lên đến 40%. Nghiên cứu được thực hiện trong năm năm cũng ghi nhận cải thiện chất lượng giấc ngủ và sự hài lòng với cuộc sống nói chung.",
         url: "https://example.com/news/health/exercise-mental-health",
-        urlToImage: "https://via.placeholder.com/600x400?text=Tập+Thể+Dục+Và+Sức+Khỏe",
+        urlToImage: "https://www.techsmith.com/blog/wp-content/uploads/2023/08/What-are-High-Resolution-Images.png",
         publishedAt: "2023-04-13T09:45:00Z",
         source: {
             name: "Tạp Chí Sức Khỏe",
@@ -71,7 +71,7 @@ const sampleNewsData = [
         content:
             'Trong một thành tựu ngoại giao đáng chú ý, đại diện từ cả hai quốc gia đã ký một hiệp ước hòa bình giải quyết các tranh chấp lãnh thổ, chia sẻ tài nguyên và hợp tác an ninh. Các quan sát viên quốc tế đã gọi thỏa thuận này là "một mô hình cho việc giải quyết xung đột trong khu vực."',
         url: "https://example.com/news/world/peace-agreement",
-        urlToImage: "https://via.placeholder.com/600x400?text=Ký+Kết+Thỏa+Thuận+Hòa+Bình",
+        urlToImage: "https://www.techsmith.com/blog/wp-content/uploads/2023/08/What-are-High-Resolution-Images.png",
         publishedAt: "2023-04-12T16:20:00Z",
         source: {
             name: "Mạng Tin Tức Thế Giới",
@@ -83,7 +83,7 @@ const sampleNewsData = [
         content:
             "Các nhà khoa học đã tạo ra một loại pin lưới điện mới có thể lưu trữ năng lượng tái tạo trong nhiều tháng với mức tổn thất tối thiểu. Công nghệ này có thể biến năng lượng mặt trời và gió thành nguồn năng lượng đáng tin cậy quanh năm, có khả năng đẩy nhanh quá trình chuyển đổi từ nhiên liệu hóa thạch.",
         url: "https://example.com/news/science/energy-storage",
-        urlToImage: "https://via.placeholder.com/600x400?text=Năng+Lượng+Tái+Tạo",
+        urlToImage: "https://www.techsmith.com/blog/wp-content/uploads/2023/08/What-are-High-Resolution-Images.png",
         publishedAt: "2023-04-11T11:10:00Z",
         source: {
             name: "Năng Lượng Tương Lai",

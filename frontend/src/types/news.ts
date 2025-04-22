@@ -3,8 +3,6 @@ export interface NewsArticle {
     description: string
     content: string
     url: string
-    urlToImage: string
-    publishedAt: string
     source: {
         name: string
     }

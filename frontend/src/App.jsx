@@ -21,10 +21,10 @@ function App() {
 
     const {isListening, toggleListening, transcript} = useVoiceCommands({
         commands: {
-            đọc: () => readCurrentArticle(),
-            "tiếp theo": () => navigateArticle(1),
-            "trước đó": () => navigateArticle(-1),
-            "dừng lại": () => stop(),
+            "đọc tin tức": () => readCurrentArticle(),
+            "tin tiếp theo": () => navigateArticle(1),
+            "tin trước đó": () => navigateArticle(-1),
+            "dừng đọc": () => stop(),
             "chuyên mục *": (categoryName) => changeCategory(categoryName),
         },
     })
@@ -42,7 +42,7 @@ function App() {
             setCurrentArticleIndex(0)
 
             // Announce that news has been loaded
-            speak(`Đã tải ${data.length} bài báo trong chuyên mục ${category}. Nói "đọc" để nghe bài đầu tiên.`)
+            speak(`Đã tải ${data.length} bài báo. Nói "đọc" để nghe bài đầu tiên.`)
         } catch (err) {
             setError("Không thể tải tin tức. Vui lòng thử lại sau.")
             speak("Không thể tải tin tức. Vui lòng thử lại sau.")
