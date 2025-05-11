@@ -68,7 +68,6 @@ const getCategoryCounts = (articles) => {
         const category = article.category || 'general';
         counts[category] = (counts[category] || 0) + 1;
     });
-    counts["general"] = 40;
 
     return counts;
 };

@@ -28,14 +28,18 @@ const NewsCard = ({article, isActive, onRead}) => {
                 <h2>{article.title}</h2>
 
                 {formattedDate && (
-                    <span className="news-source">{formattedDate}</span>
+                    <span className="news-source">{formattedDate}.<br /> Tác giả: {article.metadata.author}</span>
                 )}
 
 
                 <p className="news-description">{article.description}</p>
 
                 <div className="news-actions">
-                    <button onClick={onRead} className="read-button" aria-label="Đọc bài báo này">
+                    <button
+                        onClick={onRead} // Just call onRead directly - no index needed here
+                        className="read-button"
+                        aria-label="Đọc bài báo này"
+                    >
                         Đọc Bài Này
                     </button>
                     <a href={article.url} target="_blank" rel="noopener noreferrer" className="source-link">

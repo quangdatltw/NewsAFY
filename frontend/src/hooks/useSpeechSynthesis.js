@@ -11,6 +11,13 @@ export const useSpeechSynthesis = () => {
 
     // Load available voices
     useEffect(() => {
+        // First cancel any speech from previous session
+        const wasSpeaking = sessionStorage.getItem('isSpeaking') === 'true';
+        if (wasSpeaking) {
+            window.speechSynthesis.cancel();
+            sessionStorage.removeItem('isSpeaking');
+        }
+
         const loadVoices = () => {
             const availableVoices = window.speechSynthesis.getVoices()
 
@@ -50,6 +57,7 @@ export const useSpeechSynthesis = () => {
     const stop = useCallback(() => {
         window.speechSynthesis.cancel()
         setSpeaking(false)
+        sessionStorage.removeItem('isSpeaking')
     }, [])
 
     // Speak function
@@ -78,8 +86,16 @@ export const useSpeechSynthesis = () => {
                 // Store reference to current utterance
                 utteranceRef.current = utterance
 
-                utterance.onstart = () => setSpeaking(true)
-                utterance.onend = () => setSpeaking(false)
+                utterance.onstart = () => {
+                    setSpeaking(true)
+                    sessionStorage.setItem('isSpeaking', 'true')
+                }
+
+                utterance.onend = () => {
+                    setSpeaking(false)
+                    sessionStorage.removeItem('isSpeaking')
+                }
+
                 utterance.onerror = (e) => {
                     if (e.error === "interrupted") {
                         console.log("Speech was interrupted, likely by another speech request")
@@ -87,12 +103,13 @@ export const useSpeechSynthesis = () => {
                         console.error("Lỗi phát âm:", e)
                     }
                     setSpeaking(false)
+                    sessionStorage.removeItem('isSpeaking')
                 }
 
                 // Handle potential browser issues with speech synthesis
                 try {
                     window.speechSynthesis.speak(utterance)
-                    
+
                     if (utterance.text.length > 100) {
                         const intervalId = setInterval(() => {
                             if (!window.speechSynthesis.speaking) {
@@ -111,12 +128,14 @@ export const useSpeechSynthesis = () => {
                         utterance.onend = (event) => {
                             clearInterval(intervalId)
                             setSpeaking(false)
+                            sessionStorage.removeItem('isSpeaking')
                             if (originalOnEnd) originalOnEnd(event)
                         }
                     }
                 } catch (err) {
                     console.error("Failed to start speech synthesis:", err)
                     setSpeaking(false)
+                    sessionStorage.removeItem('isSpeaking')
                 }
             }, 400)
         },
@@ -134,9 +153,38 @@ export const useSpeechSynthesis = () => {
         return () => {
             if (window.speechSynthesis && window.speechSynthesis.speaking) {
                 window.speechSynthesis.cancel()
+                sessionStorage.removeItem('isSpeaking')
             }
         }
     }, [])
+
+    // Handle page visibility change (when switching tabs)
+    useEffect(() => {
+        const handleVisibilityChange = () => {
+            if (document.visibilityState === 'hidden') {
+                // User is leaving the page
+                if (speaking) {
+                    sessionStorage.setItem('isSpeaking', 'true')
+                }
+            }
+        }
+
+        document.addEventListener('visibilitychange', handleVisibilityChange)
+
+        // Add beforeunload event handler
+        const handleBeforeUnload = () => {
+            if (speaking) {
+                sessionStorage.setItem('isSpeaking', 'true')
+            }
+        }
+
+        window.addEventListener('beforeunload', handleBeforeUnload)
+
+        return () => {
+            document.removeEventListener('visibilitychange', handleVisibilityChange)
+            window.removeEventListener('beforeunload', handleBeforeUnload)
+        }
+    }, [speaking])
 
     return {
         speak,

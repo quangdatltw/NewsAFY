@@ -17,6 +17,7 @@ function App() {
     const [isLoading, setIsLoading] = useState(true)
     const [error, setError] = useState(null)
     const [categoryData, setCategoryData] = useState({})
+    const [selectedArticleText, setSelectedArticleText] = useState("");
     const isInitialLoad = useRef(true)
     const isLoadingRef = useRef(false)
     const categoryNameInVietnamese = {
@@ -98,7 +99,42 @@ function App() {
         }
     }
 
-    // Update the readCurrentArticle function to include the date
+    // Create a new handler function at the top of your App component
+    const handleReadArticle = (index) => {
+        setCurrentArticleIndex(index);
+        // Use a small timeout to ensure state is updated before reading
+        setTimeout(() => {
+            // Get the article at the specified index directly
+            const articleToRead = articles[index];
+
+            // Format date information
+            let dateInfo = "";
+            if (articleToRead.metadata && articleToRead.metadata.date) {
+                const dateParts = articleToRead.metadata.date.split(", ");
+                if (dateParts.length >= 2) {
+                    const dayOfWeek = dateParts[0];
+                    const dateAndTime = dateParts[1].split(" ");
+                    if (dateAndTime.length >= 1) {
+                        const time = dateParts[2]?.split(" ")[0] || "";
+                        const dateWithoutYear = dateAndTime[0].split("/").slice(0, 2).join("tháng");
+                        dateInfo = `. bài viết lúc ${time} ${dayOfWeek}, ${dateWithoutYear}`;
+                    }
+                }
+            }
+
+            // Get content and read it
+            const articleContent = articleToRead.textContent;
+            const textToRead = `${articleToRead.title}${dateInfo}. Tác giả ${articleToRead.metadata.author}. ${articleToRead.description || ""}. ${articleContent}`;
+
+            // Set the selected article text for display
+            setSelectedArticleText(articleContent || "Không có nội dung chi tiết.");
+
+            // Read the article
+            speak(textToRead);
+        }, 50);
+    };
+
+    // Update the readCurrentArticle function to set the selected article text
     const readCurrentArticle = () => {
         if (articles.length === 0) return
 
@@ -122,7 +158,16 @@ function App() {
             }
         }
 
-        const textToRead = `${article.title}${dateInfo}. ${article.description || ""}`
+        // Get the full article content or fall back to description
+        const articleContent = article.textContent;
+        console.log(article);
+
+        // Combine title, date info, description and content for reading
+        const textToRead = `${article.title}${dateInfo}. Tác giả ${article.metadata.author}. ${article.description || ""}. ${articleContent}`
+
+        // Set the selected article text for display in the side panel
+        setSelectedArticleText(articleContent || "Không có nội dung chi tiết.")
+
         speak(textToRead)
     }
 
@@ -145,63 +190,72 @@ function App() {
     }
 
     return (
-        <div className="app-container">
-            <header className="app-header">
-                <h1>Ứng Dụng Đọc Tin Tức</h1>
-                <p className="accessibility-info">
-                    Điều khiển bằng lệnh thoại: "đọc", "tiếp theo", "trước đó", "dừng lại", "chuyên mục [tên]"
-                </p>
-            </header>
+        <div className="app-layout">
+            <div className="app-container">
+                <header className="app-header">
+                    <h1>Ứng Dụng Đọc Tin Tức</h1>
+                    <p className="accessibility-info">
+                        Điều khiển bằng lệnh thoại: "đọc", "tiếp theo", "trước đó", "dừng lại", "chuyên mục [tên]"
+                    </p>
+                </header>
 
-            <VoiceControls
-                isListening={isListening}
-                toggleListening={toggleListening}
-                transcript={transcript}
-                speaking={speaking}
-                stopSpeaking={stop}
-            />
-            {voices.length > 0 && <VoiceSelector voices={voices} currentVoice={currentVoice} onVoiceChange={setVoice}/>}
+                <VoiceControls
+                    isListening={isListening}
+                    toggleListening={toggleListening}
+                    transcript={transcript}
+                    speaking={speaking}
+                    stopSpeaking={stop}
+                />
+                {voices.length > 0 &&
+                    <VoiceSelector voices={voices} currentVoice={currentVoice} onVoiceChange={setVoice}/>}
 
-            <CategorySelector
-                currentCategory={category}
-                onSelectCategory={changeCategory}
-                categoryData={categoryData}
-            />
+                <CategorySelector
+                    currentCategory={category}
+                    onSelectCategory={changeCategory}
+                    categoryData={categoryData}
+                />
 
-            <main className="news-container">
-                {isLoading ? (
-                    <div className="loading" aria-live="polite">
-                        Đang tải tin tức...
-                    </div>
-                ) : error ? (
-                    <div className="error" aria-live="assertive">
-                        {error}
-                    </div>
-                ) : articles.length === 0 ? (
-                    <div className="no-articles" aria-live="polite">
-                        Không tìm thấy bài báo nào. Hãy thử chuyên mục khác.
-                    </div>
-                ) : (
-                    <>
-                        <div className="navigation-info" aria-live="polite">
-                            Bài báo {currentArticleIndex + 1} trong số {articles.length}
+                <main className="news-container">
+                    {isLoading ? (
+                        <div className="loading" aria-live="polite">
+                            Đang tải tin tức...
                         </div>
-                        <div className="articles-list">
-                            {articles.map((article, index) => (
-                                <NewsCard
-                                    key={index}
-                                    article={article}
-                                    isActive={index === currentArticleIndex}
-                                    onRead={() => {
-                                        setCurrentArticleIndex(index)
-                                        readCurrentArticle()
-                                    }}
-                                />
-                            ))}
+                    ) : error ? (
+                        <div className="error" aria-live="assertive">
+                            {error}
                         </div>
-                    </>
-                )}
-            </main>
+                    ) : articles.length === 0 ? (
+                        <div className="no-articles" aria-live="polite">
+                            Không tìm thấy bài báo nào. Hãy thử chuyên mục khác.
+                        </div>
+                    ) : (
+                        <>
+                            <div className="navigation-info" aria-live="polite">
+                                Bài báo {currentArticleIndex + 1} trong số {articles.length}
+                            </div>
+                            <div className="articles-list">
+                                {articles.map((article, index) => (
+                                    <NewsCard
+                                        key={index}
+                                        article={article}
+                                        isActive={index === currentArticleIndex}
+                                        onRead={() => handleReadArticle(index)}
+                                    />
+                                ))}
+                            </div>
+                        </>
+                    )}
+                </main>
+            </div>
+
+            {selectedArticleText && (
+                <div className="article-panel">
+                    <h3>Nội dung bài báo</h3>
+                    <div className="article-content">
+                        {selectedArticleText}
+                    </div>
+                </div>
+            )}
         </div>
     )
 }
