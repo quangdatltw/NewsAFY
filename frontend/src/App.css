@@ -324,3 +324,7 @@ a:focus {
 .voice-select option {
     padding: 0.25rem;
 }
+.voice-button.disabled {
+    opacity: 0.7;
+    cursor: not-allowed;
+}

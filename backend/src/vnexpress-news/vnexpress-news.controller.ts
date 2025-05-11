@@ -1,4 +1,4 @@
-import { Controller, Get, Body, Param, Delete } from '@nestjs/common';
+import { Controller, Get, Body, Param, Delete, Post } from '@nestjs/common';
 import { VnexpressNewsService } from './vnexpress-news.service';
 import { GetNewDto } from './dto/get-new.dto';
 
@@ -6,12 +6,12 @@ import { GetNewDto } from './dto/get-new.dto';
 export class VnexpressNewsController {
   constructor(private readonly vnexpressNewsService: VnexpressNewsService) {}
 
-  @Get('/body-html')
+  @Post('/body-html')
   async getBodyHtml(@Body() getNewDto: GetNewDto) {
     return await this.vnexpressNewsService.getBodyHtml(getNewDto);
   }
 
-  @Get('/body-text')
+  @Post('/body-text')
   async getBodyText(@Body() getNewDto: GetNewDto) {
     return await this.vnexpressNewsService.getBodyText(getNewDto);
   }

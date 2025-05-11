@@ -1,4 +1,4 @@
-import { Controller, Get, Body, Param, Delete } from '@nestjs/common';
+import { Controller, Get, Body, Param, Delete, Post } from '@nestjs/common';
 import { DantriNewsService } from './dantri-news.service';
 import { GetNewDto } from './dto/get-new.dto';
 
@@ -6,12 +6,12 @@ import { GetNewDto } from './dto/get-new.dto';
 export class DantriNewsController {
   constructor(private readonly dantriNewsService: DantriNewsService) {}
 
-  @Get('/body-html')
+  @Post('/body-html')
   async getBodyHtml(@Body() getNewDto: GetNewDto) {
     return await this.dantriNewsService.getBodyHtml(getNewDto);
   }
 
-  @Get('/body-text')
+  @Post('/body-text')
   async getBodyText(@Body() getNewDto: GetNewDto) {
     return await this.dantriNewsService.getBodyText(getNewDto);
   }
