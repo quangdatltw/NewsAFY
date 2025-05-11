@@ -47,7 +47,7 @@ const VoiceControls = ({isListening, toggleListening, transcript, speaking, stop
             </div>
 
             {isListening && (
-                <div className="transcript" aria-live="polite">
+                <div className="transcript">
                     <p>Tôi nghe thấy: {transcript || "..."}</p>
                 </div>
             )}

@@ -7,6 +7,8 @@ import VoiceSelector from "./components/VoiceSelector.jsx"
 import {fetchNews} from "./services/newsService"
 import {useVoiceCommands} from "./hooks/useVoiceCommands"
 import {useSpeechSynthesis} from "./hooks/useSpeechSynthesis"
+import AccessibilityControls from "./components/AccessibilityControls.jsx";
+
 import "./App.css"
 
 function App() {
@@ -18,8 +20,32 @@ function App() {
     const [error, setError] = useState(null)
     const [categoryData, setCategoryData] = useState({})
     const [selectedArticleText, setSelectedArticleText] = useState("");
+    const [fontSize, setFontSize] = useState(100);
+    const [contrastMode, setContrastMode] = useState(false);
+    const [darkMode, setDarkMode] = useState(false);
+    const increaseFontSize = () => {
+        if (fontSize < 200) {
+            setFontSize(prevSize => prevSize + 10);
+        }
+    };
+
+    const decreaseFontSize = () => {
+        if (fontSize > 80) {
+            setFontSize(prevSize => prevSize - 10);
+        }
+    };
+
+    const toggleContrastMode = () => {
+        setContrastMode(prev => !prev);
+    };
+
+    const toggleDarkMode = () => {
+        setDarkMode(prev => !prev);
+    };
+
     const isInitialLoad = useRef(true)
     const isLoadingRef = useRef(false)
+
     const categoryNameInVietnamese = {
         "general": "tổng hợp",
         "politics": "chính trị",
@@ -53,6 +79,48 @@ function App() {
     useEffect(() => {
         filterArticlesByCategory(category)
     }, [category, allArticles])
+
+    // In App.jsx - update the useEffect to apply font size to html element
+    useEffect(() => {
+        // Apply font size to html element
+        document.documentElement.style.fontSize = `${fontSize}%`;
+
+        // Apply theme classes for contrast and dark mode
+        const classList = document.documentElement.classList;
+
+        if (contrastMode) {
+            classList.add('high-contrast');
+        } else {
+            classList.remove('high-contrast');
+        }
+
+        if (darkMode) {
+            classList.add('dark-theme');
+        } else {
+            classList.remove('dark-theme');
+        }
+
+        // Save preferences to localStorage
+        localStorage.setItem('accessibility', JSON.stringify({
+            fontSize,
+            contrastMode,
+            darkMode
+        }));
+    }, [fontSize, contrastMode, darkMode]);
+
+    // Add this effect to load saved preferences on mount
+    useEffect(() => {
+        try {
+            const savedSettings = JSON.parse(localStorage.getItem('accessibility'));
+            if (savedSettings) {
+                setFontSize(savedSettings.fontSize || 100);
+                setContrastMode(savedSettings.contrastMode || false);
+                setDarkMode(savedSettings.darkMode || false);
+            }
+        } catch (err) {
+            console.error('Error loading accessibility settings', err);
+        }
+    }, []);
 
     const loadNews = async () => {
         // Prevent concurrent requests
@@ -96,6 +164,8 @@ function App() {
         } else if (filteredArticles.length > 0) {
             const vietnameseName = categoryNameInVietnamese[currentCategory] || currentCategory
             speak(`Đã tải ${filteredArticles.length} bài báo trong chuyên mục ${vietnameseName}.`)
+        } else {
+            speak('Không tìm thấy bài báo nào trong chuyên mục này.')
         }
     }
 
@@ -160,7 +230,6 @@ function App() {
 
         // Get the full article content or fall back to description
         const articleContent = article.textContent;
-        console.log(article);
 
         // Combine title, date info, description and content for reading
         const textToRead = `${article.title}${dateInfo}. Tác giả ${article.metadata.author}. ${article.description || ""}. ${articleContent}`
@@ -189,7 +258,8 @@ function App() {
         speak(`Đang chuyển sang chuyên mục ${vietnameseName}`)
     }
 
-   return (
+
+    return (
         <div className="app-layout">
             <div className="app-container">
                 <header className="app-header">
@@ -206,6 +276,17 @@ function App() {
                     speaking={speaking}
                     stopSpeaking={stop}
                 />
+
+                <AccessibilityControls
+                    fontSize={fontSize}
+                    onIncreaseFontSize={increaseFontSize}
+                    onDecreaseFontSize={decreaseFontSize}
+                    contrastMode={contrastMode}
+                    toggleContrastMode={toggleContrastMode}
+                    darkMode={darkMode}
+                    toggleDarkMode={toggleDarkMode}
+                />
+
                 {voices && voices.length > 0 &&
                     <VoiceSelector
                         voices={voices}
@@ -213,6 +294,7 @@ function App() {
                         onVoiceChange={setVoice}
                     />
                 }
+
 
                 <CategorySelector
                     currentCategory={category}
