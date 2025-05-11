@@ -68,6 +68,7 @@ const getCategoryCounts = (articles) => {
         const category = article.category || 'general';
         counts[category] = (counts[category] || 0) + 1;
     });
+    counts["general"] = 40;
 
     return counts;
 };
@@ -96,7 +97,7 @@ export const parseRssFeed = (xmlText) => {
             }
         });
 
-        const linkCount = Math.min(20, allLinks.length);
+        const linkCount = Math.min(40, allLinks.length);
 
         // Shuffle the array using Fisher-Yates algorithm
         for (let i = allLinks.length - 1; i > 0; i--) {
