@@ -81,12 +81,44 @@ export const useSpeechSynthesis = () => {
                 utterance.onstart = () => setSpeaking(true)
                 utterance.onend = () => setSpeaking(false)
                 utterance.onerror = (e) => {
-                    console.error("Lỗi phát âm:", e)
+                    if (e.error === "interrupted") {
+                        console.log("Speech was interrupted, likely by another speech request")
+                    } else {
+                        console.error("Lỗi phát âm:", e)
+                    }
                     setSpeaking(false)
                 }
 
-                window.speechSynthesis.speak(utterance)
-            }, 400);
+                // Handle potential browser issues with speech synthesis
+                try {
+                    window.speechSynthesis.speak(utterance)
+                    
+                    if (utterance.text.length > 100) {
+                        const intervalId = setInterval(() => {
+                            if (!window.speechSynthesis.speaking) {
+                                clearInterval(intervalId)
+                                return
+                            }
+                            // Firefox fix - pause and resume keeps the speech synthesis alive
+                            window.speechSynthesis.pause()
+                            window.speechSynthesis.resume()
+                        }, 5000)
+
+                        // Store the original onend handler
+                        const originalOnEnd = utterance.onend
+
+                        // Create a new onend handler that calls the original one and clears the interval
+                        utterance.onend = (event) => {
+                            clearInterval(intervalId)
+                            setSpeaking(false)
+                            if (originalOnEnd) originalOnEnd(event)
+                        }
+                    }
+                } catch (err) {
+                    console.error("Failed to start speech synthesis:", err)
+                    setSpeaking(false)
+                }
+            }, 400)
         },
         [currentVoice, stop],
     )

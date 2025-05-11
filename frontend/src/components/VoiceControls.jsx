@@ -1,19 +1,38 @@
 "use client"
 
 import {Mic, MicOff, Volume2, VolumeX} from "lucide-react"
+import {useCallback, useState} from "react"
 
 const VoiceControls = ({isListening, toggleListening, transcript, speaking, stopSpeaking}) => {
+    const [isButtonDisabled, setIsButtonDisabled] = useState(false);
+
+    const handleToggleListening = useCallback(() => {
+        if (isButtonDisabled) return;
+
+        // Disable the button
+        setIsButtonDisabled(true);
+
+        // Call the actual handler
+        toggleListening();
+
+        // Re-enable after 2 seconds
+        setTimeout(() => {
+            setIsButtonDisabled(false);
+        }, 1000);
+    }, [toggleListening, isButtonDisabled]);
+
     return (
         <div className="voice-controls">
             <div className="controls-container">
                 <button
-                    onClick={toggleListening}
-                    className={`voice-button ${isListening ? "active" : ""}`}
+                    onClick={handleToggleListening}
+                    className={`voice-button ${isListening ? "active" : ""} ${isButtonDisabled ? "disabled" : ""}`}
                     aria-label={isListening ? "Dừng nghe" : "Bắt đầu nghe"}
                     aria-pressed={isListening}
+                    disabled={isButtonDisabled}
                 >
                     {isListening ? <Mic size={24}/> : <MicOff size={24}/>}
-                    <span>{isListening ? "Đang lắng nghe..." : "Bắt đầu lắng nghe"}</span>
+                    <span>{isButtonDisabled ? "Vui lòng đợi..." : isListening ? "Đang lắng nghe..." : "Bắt đầu lắng nghe"}</span>
                 </button>
 
                 <button

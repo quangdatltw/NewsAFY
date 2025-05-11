@@ -91,6 +91,8 @@ export const useVoiceCommands = ({commands, continuous = true}) => {
         if (isListening && recognition) {
             recognition.stop()
             setIsListening(false)
+            // Clear transcript when stopping listening
+            setTranscript("")
         } else {
             const rec = recognition || setupRecognition()
             if (!rec) {
