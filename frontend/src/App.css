@@ -413,6 +413,8 @@ a:focus {
     box-shadow: -2px 0 5px rgba(0, 0, 0, 0.1);
 }
 
+
+/* Mobile styles - place article panel after current NewsCard */
 @media (max-width: 768px) {
     .app-layout {
         flex-direction: column;
@@ -424,5 +426,51 @@ a:focus {
         height: auto;
         max-height: 60vh;
         position: static;
+        order: 1; /* Default order */
+        margin-top: 1.5rem;
+        margin-bottom: 1.5rem;
+    }
+
+    /* Make inactive news cards appear after the article panel */
+    .news-card {
+        order: 2;
+    }
+
+    /* Active news card appears before the article panel */
+    .news-card.active {
+        order: 0;
+    }
+
+    /* Add spacing between cards for better separation */
+    .articles-list {
+        display: flex;
+        flex-direction: column;
+        gap: 1.5rem;
+        position: relative;
+    }
+
+    /* Adjust the news container to use flex on mobile */
+    .news-container {
+        display: flex;
+        flex-direction: column;
+    }
+}
+
+/* Show/hide based on screen size */
+.desktop-article-panel {
+    display: block;
+}
+
+.mobile-article-panel {
+    display: none;
+}
+
+@media (max-width: 768px) {
+    .desktop-article-panel {
+        display: none;
+    }
+
+    .mobile-article-panel {
+        display: block;
     }
 }

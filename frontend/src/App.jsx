@@ -189,7 +189,7 @@ function App() {
         speak(`Đang chuyển sang chuyên mục ${vietnameseName}`)
     }
 
-    return (
+   return (
         <div className="app-layout">
             <div className="app-container">
                 <header className="app-header">
@@ -206,8 +206,13 @@ function App() {
                     speaking={speaking}
                     stopSpeaking={stop}
                 />
-                {voices.length > 0 &&
-                    <VoiceSelector voices={voices} currentVoice={currentVoice} onVoiceChange={setVoice}/>}
+                {voices && voices.length > 0 &&
+                    <VoiceSelector
+                        voices={voices}
+                        currentVoice={currentVoice}
+                        onVoiceChange={setVoice}
+                    />
+                }
 
                 <CategorySelector
                     currentCategory={category}
@@ -242,14 +247,25 @@ function App() {
                                         onRead={() => handleReadArticle(index)}
                                     />
                                 ))}
+
+                                {/* Mobile article panel */}
+                                {selectedArticleText && (
+                                    <div className="article-panel mobile-article-panel">
+                                        <h3>Nội dung bài báo</h3>
+                                        <div className="article-content">
+                                            {selectedArticleText}
+                                        </div>
+                                    </div>
+                                )}
                             </div>
                         </>
                     )}
                 </main>
             </div>
 
+            {/* Desktop article panel */}
             {selectedArticleText && (
-                <div className="article-panel">
+                <div className="article-panel desktop-article-panel">
                     <h3>Nội dung bài báo</h3>
                     <div className="article-content">
                         {selectedArticleText}
@@ -257,7 +273,7 @@ function App() {
                 </div>
             )}
         </div>
-    )
+    );
 }
 
 export default App
