@@ -1,7 +1,9 @@
+import { categorizeArticlesWithAI } from './newsCategorization';
 export const fetchNews = async () => {
     const timing = {
         rssVnExpress: 0,
         vnExpressContent: 0,
+        aiCategorization: 0,
         total: 0
     };
 
@@ -26,24 +28,49 @@ export const fetchNews = async () => {
         // Filter out articles with errors
         const validArticles = vnExpressArticles.filter(article => !article.error);
 
+        // Categorize articles using AI
+        const startAICategorization = performance.now();
+        const categorizedArticles = await categorizeArticlesWithAI(validArticles);
+        timing.aiCategorization = performance.now() - startAICategorization;
+
+        // Set default category if missing
+        const articlesWithCategories = categorizedArticles.map(article => ({
+            ...article,
+            category: article.category || 'general'
+        }));
+
 
         timing.total = performance.now() - startTotal;
 
         // Log timing information
         console.log('Performance timing (ms):', timing);
         console.log('VnExpress article count:', validArticles.length);
+        console.log('Categories distribution:', getCategoryCounts(articlesWithCategories));
 
         return {
-            articles: validArticles,
-            vnExpressCount: validArticles.length
+            articles: articlesWithCategories,
+            vnExpressCount: validArticles.length,
+            categoryData: getCategoryCounts(articlesWithCategories)
         };
     } catch (error) {
         timing.total = performance.now() - startTotal;
         console.error("Error fetching news:", error);
         console.error('Performance timing at error (ms):', timing);
-        return {articles: [], vnExpressCount: 0};
+        return {articles: [], vnExpressCount: 0, categoryData: {}};
     }
-}
+};
+
+// Helper function to count articles in each category
+const getCategoryCounts = (articles) => {
+    const counts = { all: articles.length };
+
+    articles.forEach(article => {
+        const category = article.category || 'general';
+        counts[category] = (counts[category] || 0) + 1;
+    });
+
+    return counts;
+};
 
 export const parseRssFeed = (xmlText) => {
     try {
@@ -101,7 +128,6 @@ export const fetchArticleContent = async (url) => {
         });
 
         const textData = await textResponse.json();
-        console.log(textData.description);
 
         return {
             url,
@@ -124,3 +150,4 @@ export const fetchArticleContent = async (url) => {
         };
     }
 }
+

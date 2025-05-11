@@ -1,6 +1,6 @@
 "use client"
 
-const CategorySelector = ({currentCategory, onSelectCategory}) => {
+const CategorySelector = ({currentCategory, onSelectCategory, categoryData = {}}) => {
     const categories = [
         {id: "general", name: "Tổng hợp"},
         {id: "business", name: "Kinh doanh"},
@@ -23,6 +23,7 @@ const CategorySelector = ({currentCategory, onSelectCategory}) => {
                         aria-pressed={currentCategory === category.id}
                     >
                         {category.name}
+                        {categoryData[category.id] > 0 && ` (${categoryData[category.id]})`}
                     </button>
                 ))}
             </div>
