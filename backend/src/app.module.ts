@@ -5,6 +5,8 @@ import { AppService } from './app.service';
 import { DantriNewsModule } from './dantri-news/dantri-news.module';
 import { VnexpressNewsModule } from './vnexpress-news/vnexpress-news.module';
 import { ThrottlerModule } from '@nestjs/throttler';
+import { GoldPriceModule } from './gold-price/gold-price.module';
+import { WeatherModule } from './weather/weather.module';
 
 @Module({
   imports: [
@@ -18,6 +20,8 @@ import { ThrottlerModule } from '@nestjs/throttler';
         },
       ],
     }),
+    GoldPriceModule,
+    WeatherModule,
   ],
   controllers: [AppController],
   providers: [AppService],
