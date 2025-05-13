@@ -3,7 +3,6 @@ import {useEffect, useRef, useState} from "react"
 import NewsCard from "./components/NewsCard"
 import VoiceControls from "./components/VoiceControls"
 import CategorySelector from "./components/CategorySelector"
-import VoiceSelector from "./components/VoiceSelector.jsx"
 import {fetchNews} from "./services/newsService"
 import {useVoiceCommands} from "./hooks/useVoiceCommands"
 import {useSpeechSynthesis} from "./hooks/useSpeechSynthesis"
@@ -20,9 +19,11 @@ function App() {
     const [error, setError] = useState(null)
     const [categoryData, setCategoryData] = useState({})
     const [selectedArticleText, setSelectedArticleText] = useState("");
-    const [fontSize, setFontSize] = useState(100);
+    const [fontSize, setFontSize] = useState(150);
     const [contrastMode, setContrastMode] = useState(false);
     const [darkMode, setDarkMode] = useState(false);
+    const [isWelcomeComplete, setIsWelcomeComplete] = useState(false);
+
     const increaseFontSize = () => {
         if (fontSize < 200) {
             setFontSize(prevSize => prevSize + 10);
@@ -39,8 +40,27 @@ function App() {
         setContrastMode(prev => !prev);
     };
 
+    // Fix the toggle functions
     const toggleDarkMode = () => {
-        setDarkMode(prev => !prev);
+      console.log("Setting dark mode to true");
+      setDarkMode(true);
+      // Force update in localStorage
+      localStorage.setItem('accessibility', JSON.stringify({
+        fontSize,
+        contrastMode,
+        darkMode: true
+      }));
+    };
+
+    const toggleLightMode = () => {
+      console.log("Setting dark mode to false");
+      setDarkMode(false);
+      // Force update in localStorage
+      localStorage.setItem('accessibility', JSON.stringify({
+        fontSize,
+        contrastMode,
+        darkMode: false
+      }));
     };
 
     const isInitialLoad = useRef(true)
@@ -58,15 +78,28 @@ function App() {
         // Add other categories as needed
     };
 
-    const {speak, stop, speaking, voices, currentVoice, setVoice} = useSpeechSynthesis()
+    const {speak, stop, speaking} = useSpeechSynthesis()
 
     const {isListening, toggleListening, transcript} = useVoiceCommands({
         commands: {
-            "đọc tin tức": () => readCurrentArticle(),
-            "tin tiếp theo": () => navigateArticle(1),
-            "tin trước đó": () => navigateArticle(-1),
-            "dừng đọc": () => stop(),
-            "chuyên mục *": (categoryName) => changeCategory(categoryName),
+            "0": () => readInstruction(),
+            "1": () => readCurrentArticle(),
+            "2": () => navigateArticle(1),
+            "3": () => navigateArticle(-1),
+            "4": () => stop(),
+            "5": (categoryName) => changeCategory(categoryName),
+            "6": () => increaseFontSize(),
+            "7": () => decreaseFontSize(),
+            "8": () => toggleContrastMode(),
+            "9": () => {
+                    toggleDarkMode()
+            },
+            "10": () => {
+                    toggleLightMode()
+            },
+            "11": () => {
+                speak("Xin lỗi, tôi không hiểu yêu cầu của bạn. Hãy thử nói lại.");
+            }
         },
     })
 
@@ -74,6 +107,31 @@ function App() {
     useEffect(() => {
         loadNews()
     }, [])
+
+    useEffect(() => {
+        // Only read instructions on first load and only once
+        if (isInitialLoad.current) {
+            const welcomeMessage = `Chào mừng đến với ứng dụng nghe tin tức. Nhấn phím cách để nói.
+            Nói hướng dẫn để nghe hướng dẫn sử dụng.`;
+
+            speak(welcomeMessage, () => {
+                setIsWelcomeComplete(true);
+            }, true);
+        }
+
+        return () => {
+            stop();
+        };
+    }, []);
+
+    useEffect(() => {
+        // Check if welcome message is complete and we still need to announce the initial articles
+        console.log(isWelcomeComplete && isInitialLoad.current && articles.length > 0)
+        if (isWelcomeComplete && isInitialLoad.current && articles.length > 0) {
+            isInitialLoad.current = false;
+            speak(`Đã tải ${articles.length} bài báo. Nói đọc để nghe bài đầu tiên.`);
+        }
+    }, [isWelcomeComplete, articles]);
 
     // Filter articles whenever category changes
     useEffect(() => {
@@ -122,6 +180,41 @@ function App() {
         }
     }, []);
 
+
+    // Add this effect to App.jsx
+    useEffect(() => {
+        const handleKeyDown = (e) => {
+            // Only trigger if space is pressed and not typing in input fields
+            if (e.code === 'Space' &&
+                !['INPUT', 'TEXTAREA'].includes(document.activeElement.tagName)) {
+                e.preventDefault(); // Prevent page scroll
+                if (!isListening) {
+                    toggleListening();
+                }
+            }
+        };
+
+        const handleKeyUp = (e) => {
+            // Stop listening when space is released
+            if (e.code === 'Space' &&
+                !['INPUT', 'TEXTAREA'].includes(document.activeElement.tagName)) {
+                e.preventDefault();
+                if (isListening) {
+                    toggleListening();
+                }
+            }
+        };
+
+        window.addEventListener('keydown', handleKeyDown);
+        window.addEventListener('keyup', handleKeyUp);
+
+        return () => {
+            window.removeEventListener('keydown', handleKeyDown);
+            window.removeEventListener('keyup', handleKeyUp);
+        };
+    }, [isListening, toggleListening]);
+
+
     const loadNews = async () => {
         // Prevent concurrent requests
         if (isLoadingRef.current) return
@@ -146,28 +239,49 @@ function App() {
         }
     }
 
+    const readInstruction = () => {
+        const instructions = `
+        Hướng dẫn sử dụng bằng giọng nói:
+        Nói đọc. để nghe nội dung bài báo hiện tại.
+        tiếp theo. để chuyển đến bài báo tiếp theo.
+        trước đó. để quay lại bài báo trước.
+        dừng lại. để dừng đọc.
+        chuyên mục. và tên chuyên mục. để lọc tin tức theo chuyên mục.
+        danh sách chuyên mục bao gồm: tổng hợp, kinh doanh, công nghệ, giải trí, thể thao, sức khỏe, khoa học.
+        tăng hoặc giảm cỡ chữ. để điều chỉnh kích thước chữ.
+        chế độ tương phản. để bật tắt chế độ tương phản cao.
+        chế độ tối hoặc sáng. để thay đổi giao diện.
+    `;
+
+        speak(instructions);
+    };
+
     const filterArticlesByCategory = (currentCategory) => {
         if (allArticles.length === 0) return;
 
         // Filter articles by selected category
         const filteredArticles = currentCategory === "general"
             ? allArticles
-            : allArticles.filter(article => article.category === currentCategory)
+            : allArticles.filter(article => article.category === currentCategory);
 
-        setArticles(filteredArticles)
-        setCurrentArticleIndex(0)
+        setArticles(filteredArticles);
+        setCurrentArticleIndex(0);
 
-        // Only announce on first load or category change
-        if (isInitialLoad.current && filteredArticles.length > 0) {
-            isInitialLoad.current = false
-            speak(`Đã tải ${filteredArticles.length} bài báo. Nói đọc để nghe bài đầu tiên.`)
-        } else if (filteredArticles.length > 0) {
-            const vietnameseName = categoryNameInVietnamese[currentCategory] || currentCategory
-            speak(`Đã tải ${filteredArticles.length} bài báo trong chuyên mục ${vietnameseName}.`)
-        } else {
-            speak('Không tìm thấy bài báo nào trong chuyên mục này.')
+        // Check if this is initial load and welcome is complete
+        if (isInitialLoad.current && isWelcomeComplete && filteredArticles.length > 0) {
+            isInitialLoad.current = false;
+            speak(`Đã tải ${filteredArticles.length} bài báo`);
         }
-    }
+        // Announce for category changes (not initial)
+        else if (!isInitialLoad.current && filteredArticles.length > 0) {
+            const vietnameseName = categoryNameInVietnamese[currentCategory] || currentCategory;
+            speak(`Đã tải ${filteredArticles.length} bài báo trong chuyên mục ${vietnameseName}.`);
+        }
+        // No articles found
+        else if (!isInitialLoad.current || isWelcomeComplete) {
+            speak('Không tìm thấy bài báo nào trong chuyên mục này.');
+        }
+    };
 
     // Create a new handler function at the top of your App component
     const handleReadArticle = (index) => {
@@ -242,7 +356,13 @@ function App() {
 
     const navigateArticle = (direction) => {
         stop()
-        const newIndex = currentArticleIndex + direction
+        let newIndex = currentArticleIndex + direction
+        console.log(newIndex)
+        console.log(articles.length)
+        console.log(currentArticleIndex)
+        if (newIndex < 0) {
+            newIndex = 0;
+        }
         if (newIndex >= 0 && newIndex < articles.length) {
             setCurrentArticleIndex(newIndex)
             speak(`Bài báo ${newIndex + 1} trong số ${articles.length}. Nói "đọc" để nghe nội dung.`)
@@ -263,9 +383,11 @@ function App() {
         <div className="app-layout">
             <div className="app-container">
                 <header className="app-header">
-                    <h1>Ứng Dụng Đọc Tin Tức</h1>
+                    <h1>Nghe Tin Nhanh</h1>
                     <p className="accessibility-info">
-                        Điều khiển bằng lệnh thoại: "đọc", "tiếp theo", "trước đó", "dừng lại", "chuyên mục [tên]"
+                        Điều khiển bằng lệnh thoại: "đọc", "tiếp theo", "trước đó", "dừng lại", "chuyên mục
+                        [tên]", <br></br>
+                        "tăng cỡ chữ", "giảm cỡ chữ", "chế độ tương phản", "chế độ tối", "chế độ sáng"
                     </p>
                 </header>
 
@@ -286,14 +408,6 @@ function App() {
                     darkMode={darkMode}
                     toggleDarkMode={toggleDarkMode}
                 />
-
-                {voices && voices.length > 0 &&
-                    <VoiceSelector
-                        voices={voices}
-                        currentVoice={currentVoice}
-                        onVoiceChange={setVoice}
-                    />
-                }
 
 
                 <CategorySelector

@@ -21,34 +21,51 @@ export const useVoiceCommands = ({commands, continuous = true}) => {
 
     const processCommand = useCallback(
         async (transcript) => {
-            let lowerTranscript = transcript.toLowerCase().trim()
-            console.log(lowerTranscript)
+            let lowerTranscript = transcript.toLowerCase().trim();
+            console.log("Original transcript:", lowerTranscript);
 
-            // Replace specific words in the transcript
-            const wordReplacements = {
-                "học": "đọc",
-                // Add more replacements as needed
+            // Filter out "phẩy", "phay", and other short utterances
+            if (
+                // Common false positives that start with "ph" and are short
+                /^ph[aàáạãảăằắặẵẳâầấậẫẩ][yỳýỵỹỷ][.]$/i.test(lowerTranscript) ||
+                // Very short transcripts (less than 2 characters)
+                lowerTranscript.length < 3 ||
+                // Common single words that should be ignored
+                ['phẩy.', 'phay', 'phải', 'phải không', 'phế', 'phá',"ừ."].includes(lowerTranscript)
+            ) {
+                console.log("Ignoring common false positive:", lowerTranscript);
+                return false;
             }
-            lowerTranscript = lowerTranscript.split(" ").map(word => wordReplacements[word] || word).join(" ")
-            console.log(lowerTranscript)
 
             try {
-                const selectedCommand = await commandSelector(lowerTranscript)
-                if (selectedCommand) {
-                    console.log("Executing command:", selectedCommand)
-                    console.log("Executing command:", commands[selectedCommand] + "()")
+                const commandResult = await commandSelector(lowerTranscript);
+                console.log("Command selector returned:", commandResult);
 
-                    commands[selectedCommand]()
-                    return true
+                // Check if it's a category command (format: "5:categoryName")
+                if (commandResult.includes(':')) {
+                    const [cmd, param] = commandResult.split(':');
+                    if (cmd === "5" && commands[cmd]) {
+                        console.log(`Executing category command with param: ${param}`);
+                        commands[cmd](param);
+                        return true;
+                    }
                 }
+                // Regular command
+                else if (commands[commandResult]) {
+                    console.log(`Executing command: ${commandResult}`);
+                    commands[commandResult]();
+                    return true;
+                }
+
+                console.warn("No matching command found for:", commandResult);
             } catch (error) {
-                console.error("Error processing command:", error)
+                console.error("Error processing command:", error);
             }
 
-            return false
+            return false;
         },
-        [commands],
-    )
+        [commands]
+    );
 
     const setupRecognition = useCallback(() => {
         const rec = createRecognition()

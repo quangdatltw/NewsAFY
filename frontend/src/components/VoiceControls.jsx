@@ -6,20 +6,20 @@ import {useCallback, useState} from "react"
 const VoiceControls = ({isListening, toggleListening, transcript, speaking, stopSpeaking}) => {
     const [isButtonDisabled, setIsButtonDisabled] = useState(false);
 
-    const handleToggleListening = useCallback(() => {
-        if (isButtonDisabled) return;
+   const handleToggleListening = useCallback(() => {
+       if (isButtonDisabled) return;
 
-        // Disable the button
-        setIsButtonDisabled(true);
+       // Disable the button
+       setIsButtonDisabled(true);
 
-        // Call the actual handler
-        toggleListening();
+       // Call the actual handler
+       toggleListening();
 
-        // Re-enable after 2 seconds
-        setTimeout(() => {
-            setIsButtonDisabled(false);
-        }, 1000);
-    }, [toggleListening, isButtonDisabled]);
+       // Re-enable after a short delay
+       setTimeout(() => {
+           setIsButtonDisabled(false);
+       }, 500); // Reduced to 500ms for better responsiveness
+   }, [toggleListening, isButtonDisabled]);
 
     return (
         <div className="voice-controls">

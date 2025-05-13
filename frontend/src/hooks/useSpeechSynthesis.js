@@ -8,6 +8,8 @@ export const useSpeechSynthesis = () => {
     const [speaking, setSpeaking] = useState(false)
     const [availableVoicesLoaded, setAvailableVoicesLoaded] = useState(false)
     const utteranceRef = useRef(null)
+    const [isWelcomeSpeaking, setIsWelcomeSpeaking] = useState(false);
+    const synth = window.speechSynthesis;
 
     // Load available voices
     useEffect(() => {
@@ -60,87 +62,78 @@ export const useSpeechSynthesis = () => {
         sessionStorage.removeItem('isSpeaking')
     }, [])
 
-    // Speak function
-    const speak = useCallback(
-        (text) => {
-            // Always cancel any ongoing speech first
-            stop()
 
-            if (!text) return
 
-            // Add a small delay before starting new speech
-            setTimeout(() => {
-                const utterance = new SpeechSynthesisUtterance(text)
+    const speak = useCallback((text, callback = null, isWelcomeMessage = false) => {
+        // Don't interrupt welcome message
+        if (isWelcomeSpeaking && !isWelcomeMessage) {
+            return; // Simply return without speaking
+        }
 
-                if (currentVoice) {
-                    utterance.voice = currentVoice
-                    utterance.lang = currentVoice.lang // Sử dụng ngôn ngữ của giọng đã chọn
-                } else {
-                    utterance.lang = "vi-VN" // Fallback to Vietnamese
-                }
+        // Cancel current speech if not in welcome message
+        if (!isWelcomeSpeaking || isWelcomeMessage) {
+            synth.cancel();
+        }
 
-                utterance.rate = 1.0
-                utterance.pitch = 1.0
-                utterance.volume = 1.0
+        if (!text) return;
 
-                // Store reference to current utterance
-                utteranceRef.current = utterance
+        const utterance = new SpeechSynthesisUtterance(text);
 
-                utterance.onstart = () => {
-                    setSpeaking(true)
-                    sessionStorage.setItem('isSpeaking', 'true')
-                }
+        // Set voice properties
+        if (currentVoice) {
+            utterance.voice = currentVoice;
+            utterance.lang = currentVoice.lang;
+        } else {
+            utterance.lang = "vi-VN";
+        }
 
-                utterance.onend = () => {
-                    setSpeaking(false)
-                    sessionStorage.removeItem('isSpeaking')
-                }
+        utterance.rate = 1.0;
+        utterance.pitch = 1.0;
+        utterance.volume = 1.0;
 
-                utterance.onerror = (e) => {
-                    if (e.error === "interrupted") {
-                        console.log("Speech was interrupted, likely by another speech request")
-                    } else {
-                        console.error("Lỗi phát âm:", e)
-                    }
-                    setSpeaking(false)
-                    sessionStorage.removeItem('isSpeaking')
-                }
+        utteranceRef.current = utterance;
 
-                // Handle potential browser issues with speech synthesis
-                try {
-                    window.speechSynthesis.speak(utterance)
+        // Set welcome flag if this is welcome message
+        if (isWelcomeMessage) {
+            setIsWelcomeSpeaking(true);
+        }
 
-                    if (utterance.text.length > 100) {
-                        const intervalId = setInterval(() => {
-                            if (!window.speechSynthesis.speaking) {
-                                clearInterval(intervalId)
-                                return
-                            }
-                            // Firefox fix - pause and resume keeps the speech synthesis alive
-                            window.speechSynthesis.pause()
-                            window.speechSynthesis.resume()
-                        }, 5000)
+        utterance.onstart = () => {
+            setSpeaking(true);
+            sessionStorage.setItem('isSpeaking', 'true');
+        };
 
-                        // Store the original onend handler
-                        const originalOnEnd = utterance.onend
+        utterance.onend = () => {
+            setSpeaking(false);
+            sessionStorage.removeItem('isSpeaking');
 
-                        // Create a new onend handler that calls the original one and clears the interval
-                        utterance.onend = (event) => {
-                            clearInterval(intervalId)
-                            setSpeaking(false)
-                            sessionStorage.removeItem('isSpeaking')
-                            if (originalOnEnd) originalOnEnd(event)
-                        }
-                    }
-                } catch (err) {
-                    console.error("Failed to start speech synthesis:", err)
-                    setSpeaking(false)
-                    sessionStorage.removeItem('isSpeaking')
-                }
-            }, 400)
-        },
-        [currentVoice, stop],
-    )
+            // Reset welcome flag when welcome message ends
+            if (isWelcomeMessage) {
+                setIsWelcomeSpeaking(false);
+            }
+
+            // Call callback if provided
+            if (callback && typeof callback === 'function') {
+                callback();
+            }
+        };
+
+        utterance.onerror = () => {
+            setSpeaking(false);
+            sessionStorage.removeItem('isSpeaking');
+
+            if (isWelcomeMessage) {
+                setIsWelcomeSpeaking(false);
+            }
+
+            if (callback && typeof callback === 'function') {
+                callback();
+            }
+        };
+
+        synth.speak(utterance);
+    }, [currentVoice, isWelcomeSpeaking]);
+
 
     // Set voice function
     const setVoice = useCallback((voice) => {
@@ -194,5 +187,6 @@ export const useSpeechSynthesis = () => {
         setVoice,
         currentVoice,
         availableVoicesLoaded,
-    }
+        isWelcomeSpeaking
+    };
 }

@@ -24,6 +24,7 @@ export const fetchNews = async () => {
         const vnExpressContentPromises = vnExpressLinks.map(link => fetchArticleContent(link));
         const vnExpressArticles = await Promise.all(vnExpressContentPromises);
         timing.vnExpressContent = performance.now() - startVnExpressContent;
+        console.log(vnExpressArticles);
 
         // Filter out articles with errors
         const validArticles = vnExpressArticles.filter(article => !article.error);
@@ -68,6 +69,7 @@ const getCategoryCounts = (articles) => {
         const category = article.category || 'general';
         counts[category] = (counts[category] || 0) + 1;
     });
+    counts['general'] = 50;
 
     return counts;
 };
@@ -96,7 +98,7 @@ export const parseRssFeed = (xmlText) => {
             }
         });
 
-        const linkCount = Math.min(40, allLinks.length);
+        const linkCount = Math.min(50, allLinks.length);
 
         // Shuffle the array using Fisher-Yates algorithm
         for (let i = allLinks.length - 1; i > 0; i--) {
