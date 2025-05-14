@@ -45,8 +45,8 @@ const AccessibilityControls = ({
                     className={`control-button ${darkMode ? 'active' : ''}`}
                     aria-label={darkMode ? "Chuyển sang chế độ sáng" : "Chuyển sang chế độ tối"}
                 >
-                        {darkMode ? <Sun size={24}/> : <Moon size={24}/>}
-                        <span>{darkMode ? "  Chế độ sáng" : "  Chế độ tối"}</span>
+                    {darkMode ? <Sun size={24}/> : <Moon size={24}/>}
+                    <span>{darkMode ? "  Chế độ sáng" : "  Chế độ tối"}</span>
 
                 </button>
             </div>

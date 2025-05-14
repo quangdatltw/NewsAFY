@@ -28,7 +28,7 @@ const NewsCard = ({article, isActive, onRead}) => {
                 <h2>{article.title}</h2>
 
                 {formattedDate && (
-                    <span className="news-source">{formattedDate}.<br /> Tác giả: {article.metadata.author}</span>
+                    <span className="news-source">{formattedDate}.<br/> Tác giả: {article.metadata.author}</span>
                 )}
 
 
@@ -42,9 +42,11 @@ const NewsCard = ({article, isActive, onRead}) => {
                     >
                         Đọc Bài Này
                     </button>
-                    <a href={article.url} target="_blank" rel="noopener noreferrer" className="source-link">
-                        Xem Thêm
-                    </a>
+                    <button>
+                        <a href={article.url} target="_blank" rel="noopener noreferrer" className="source-link">
+                            Xem Thêm
+                        </a>
+                    </button>
                 </div>
             </div>
         </article>

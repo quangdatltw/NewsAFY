@@ -31,7 +31,7 @@ export const useVoiceCommands = ({commands, continuous = true}) => {
                 // Very short transcripts (less than 2 characters)
                 lowerTranscript.length < 3 ||
                 // Common single words that should be ignored
-                ['phẩy.', 'phay', 'phải', 'phải không', 'phế', 'phá',"ừ."].includes(lowerTranscript)
+                ['phẩy.', 'phay', 'phải', 'phải không', 'phế', 'phá', "ừ."].includes(lowerTranscript)
             ) {
                 console.log("Ignoring common false positive:", lowerTranscript);
                 return false;
