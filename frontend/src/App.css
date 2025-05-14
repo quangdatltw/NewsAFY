@@ -605,8 +605,8 @@ button:focus, a:focus {
 }
 
 
-/* Responsive styles */
-@media (min-width: 768px) {
+
+@media (max-width: 768px) {
     .news-card {
         flex-direction: row;
     }
@@ -615,9 +615,6 @@ button:focus, a:focus {
         width: 250px;
         height: auto;
     }
-}
-
-@media (max-width: 768px) {
     .app-layout {
         flex-direction: column;
     }
@@ -644,6 +641,19 @@ button:focus, a:focus {
     .mobile-article-panel {
         display: block;
     }
+    
+    .weather-display h3,
+    .weather-desc,
+    .weather-location,
+    .weather-temp,
+    .weather-icon-temp,
+    .weather-icon,
+    .weather-display,
+    .info-widgets {
+        display: none;
+    }
+
+
 }
 
 .info-widgets {
@@ -695,11 +705,6 @@ button:focus, a:focus {
     font-size: 0.9rem;
 }
 
-@media (max-width: 768px) {
-    .info-widgets {
-        flex-direction: column;
-    }
-}
 
 .weather-icon-temp {
     display: flex;
