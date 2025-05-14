@@ -7,8 +7,12 @@ import {fetchNews} from "./services/newsService"
 import {useVoiceCommands} from "./hooks/useVoiceCommands"
 import {useSpeechSynthesis} from "./hooks/useSpeechSynthesis"
 import AccessibilityControls from "./components/AccessibilityControls.jsx";
-
+import {analyzeGoldPriceData, analyzeWeatherData} from "./services/analyzeApiService";
 import "./App.css"
+import {fetchWeatherData} from "@/services/weatherService.js";
+import {fetchGoldPrice} from "@/services/goldPriceService.js";
+import WeatherDisplay from "@/components/WeatherDisplay.jsx";
+
 
 function App() {
     const [allArticles, setAllArticles] = useState([])
@@ -19,10 +23,12 @@ function App() {
     const [error, setError] = useState(null)
     const [categoryData, setCategoryData] = useState({})
     const [selectedArticleText, setSelectedArticleText] = useState("");
-    const [fontSize, setFontSize] = useState(150);
+    const [fontSize, setFontSize] = useState(110);
     const [contrastMode, setContrastMode] = useState(false);
     const [darkMode, setDarkMode] = useState(false);
     const [isWelcomeComplete, setIsWelcomeComplete] = useState(false);
+    const [weatherData, setWeatherData] = useState(null);
+    const [goldPriceData, setGoldPriceData] = useState(null);
 
     const increaseFontSize = () => {
         if (fontSize < 200) {
@@ -42,30 +48,31 @@ function App() {
 
     // Fix the toggle functions
     const toggleDarkMode = () => {
-      console.log("Setting dark mode to true");
-      setDarkMode(true);
-      // Force update in localStorage
-      localStorage.setItem('accessibility', JSON.stringify({
-        fontSize,
-        contrastMode,
-        darkMode: true
-      }));
+        if (darkMode) {
+            setDarkMode(false);
+            localStorage.setItem('accessibility', JSON.stringify({
+                fontSize,
+                contrastMode,
+                darkMode: false
+            }));
+            return;
+        }
+        setDarkMode(true);
+        localStorage.setItem('accessibility', JSON.stringify({
+            fontSize,
+            contrastMode,
+            darkMode: true
+        }));
     };
 
     const toggleLightMode = () => {
-      console.log("Setting dark mode to false");
-      setDarkMode(false);
-      // Force update in localStorage
-      localStorage.setItem('accessibility', JSON.stringify({
-        fontSize,
-        contrastMode,
-        darkMode: false
-      }));
+        setDarkMode(false);
+        localStorage.setItem('accessibility', JSON.stringify({
+            fontSize,
+            contrastMode,
+            darkMode: false
+        }));
     };
-
-    const isInitialLoad = useRef(true)
-    const isLoadingRef = useRef(false)
-
     const categoryNameInVietnamese = {
         "general": "tổng hợp",
         "politics": "chính trị",
@@ -77,6 +84,10 @@ function App() {
         "science": "khoa học",
         // Add other categories as needed
     };
+
+    const isInitialLoad = useRef(true)
+    const isLoadingRef = useRef(false)
+
 
     const {speak, stop, speaking} = useSpeechSynthesis()
 
@@ -92,14 +103,16 @@ function App() {
             "7": () => decreaseFontSize(),
             "8": () => toggleContrastMode(),
             "9": () => {
-                    toggleDarkMode()
+                toggleDarkMode()
             },
             "10": () => {
-                    toggleLightMode()
+                toggleLightMode()
             },
             "11": () => {
                 speak("Xin lỗi, tôi không hiểu yêu cầu của bạn. Hãy thử nói lại.");
-            }
+            },
+            "12": () => showWeatherInfo(),
+            "13": () => showGoldPriceInfo()
         },
     })
 
@@ -111,8 +124,8 @@ function App() {
     useEffect(() => {
         // Only read instructions on first load and only once
         if (isInitialLoad.current) {
-            const welcomeMessage = `Chào mừng đến với ứng dụng nghe tin tức. Nhấn phím cách để nói.
-            Nói hướng dẫn để nghe hướng dẫn sử dụng.`;
+            const welcomeMessage = `Chào mừng đến với ứng dụng nghe tin tức. Nhấn giữ phím cách để nói.
+            Nói hướng dẫn để nghe hướng dẫn sử dụng. Đang tải tin tức, xin vui lòng chờ.`;
 
             speak(welcomeMessage, () => {
                 setIsWelcomeComplete(true);
@@ -124,14 +137,6 @@ function App() {
         };
     }, []);
 
-    useEffect(() => {
-        // Check if welcome message is complete and we still need to announce the initial articles
-        console.log(isWelcomeComplete && isInitialLoad.current && articles.length > 0)
-        if (isWelcomeComplete && isInitialLoad.current && articles.length > 0) {
-            isInitialLoad.current = false;
-            speak(`Đã tải ${articles.length} bài báo. Nói đọc để nghe bài đầu tiên.`);
-        }
-    }, [isWelcomeComplete, articles]);
 
     // Filter articles whenever category changes
     useEffect(() => {
@@ -239,6 +244,52 @@ function App() {
         }
     }
 
+
+    // Then replace your existing weather function with this:
+    const showWeatherInfo = async () => {
+        try {
+            const data = await fetchWeatherData();
+            setWeatherData(data);
+
+            // Use Gemini AI to analyze the weather data
+            const weatherSummary = await analyzeWeatherData(data);
+
+            // Set the weather text to display in the article panel
+            setSelectedArticleText(weatherSummary);
+
+            // Read the weather information
+            speak(weatherSummary);
+        } catch (error) {
+            console.error("Error fetching weather data:", error);
+            const errorMessage = "Không thể tải thông tin thời tiết.";
+            setSelectedArticleText(errorMessage);
+            speak(errorMessage);
+        }
+    };
+
+    // And replace your gold price function with this:
+    const showGoldPriceInfo = async () => {
+        try {
+            const data = await fetchGoldPrice();
+            setGoldPriceData(data);
+
+            // Use Gemini AI to analyze the gold price data
+            const goldSummary = await analyzeGoldPriceData(data);
+
+            // Set the gold price text to display in the article panel
+            setSelectedArticleText(goldSummary);
+
+            // Read the gold price information
+            speak(goldSummary);
+        } catch (error) {
+            console.error("Error fetching gold price data:", error);
+            const errorMessage = "Không thể tải thông tin giá vàng.";
+            setSelectedArticleText(errorMessage);
+            speak(errorMessage);
+        }
+    };
+
+
     const readInstruction = () => {
         const instructions = `
         Hướng dẫn sử dụng bằng giọng nói:
@@ -251,6 +302,8 @@ function App() {
         tăng hoặc giảm cỡ chữ. để điều chỉnh kích thước chữ.
         chế độ tương phản. để bật tắt chế độ tương phản cao.
         chế độ tối hoặc sáng. để thay đổi giao diện.
+        thời tiết. để nghe thông tin thời tiết.
+        giá vàng. để nghe thông tin giá vàng.
     `;
 
         speak(instructions);
@@ -315,7 +368,7 @@ function App() {
 
             // Read the article
             speak(textToRead);
-        }, 50);
+        }, 200);
     };
 
     // Update the readCurrentArticle function to set the selected article text
@@ -357,9 +410,6 @@ function App() {
     const navigateArticle = (direction) => {
         stop()
         let newIndex = currentArticleIndex + direction
-        console.log(newIndex)
-        console.log(articles.length)
-        console.log(currentArticleIndex)
         if (newIndex < 0) {
             newIndex = 0;
         }
@@ -384,11 +434,15 @@ function App() {
             <div className="app-container">
                 <header className="app-header">
                     <h1>Nghe Tin Nhanh</h1>
-                    <p className="accessibility-info">
-                        Điều khiển bằng lệnh thoại: "đọc", "tiếp theo", "trước đó", "dừng lại", "chuyên mục
-                        [tên]", <br></br>
-                        "tăng cỡ chữ", "giảm cỡ chữ", "chế độ tương phản", "chế độ tối", "chế độ sáng"
-                    </p>
+                    <div className="info-widgets">
+                        <p className="accessibility-info">
+                            Điều khiển lệnh thoại: "đọc", "tiếp theo", "trước đó", "dừng lại", "chuyên mục [tên]", <br></br>
+                            "tăng cỡ chữ", "giảm cỡ chữ", "chế độ tương phản", "chế độ tối", "chế độ sáng"
+                        </p>
+                        <WeatherDisplay/>
+
+                    </div>
+
                 </header>
 
                 <VoiceControls
@@ -462,7 +516,7 @@ function App() {
             {/* Desktop article panel */}
             {selectedArticleText && (
                 <div className="article-panel desktop-article-panel">
-                    <h3>Nội dung bài báo</h3>
+                    <h3>Nội dung</h3>
                     <div className="article-content">
                         {selectedArticleText}
                     </div>

@@ -1,4 +1,5 @@
-import { categorizeArticlesWithAI } from './newsCategorization';
+import {categorizeArticlesWithAI} from './newsCategorization';
+
 export const fetchNews = async () => {
     const timing = {
         rssVnExpress: 0,
@@ -63,7 +64,7 @@ export const fetchNews = async () => {
 
 // Helper function to count articles in each category
 const getCategoryCounts = (articles) => {
-    const counts = { all: articles.length };
+    const counts = {all: articles.length};
 
     articles.forEach(article => {
         const category = article.category || 'general';

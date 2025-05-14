@@ -113,7 +113,13 @@ button:focus, a:focus {
 
 .accessibility-info {
     font-size: 0.9rem;
-    color: var(--text-muted);
+    justify-content: center;
+    display: flex;
+    color: var(--text-color);
+    transition: color 0.3s;
+    flex-direction: column;
+    align-items: center;
+    text-align: left;
 }
 
 /* Accessibility Controls */
@@ -156,10 +162,12 @@ button:focus, a:focus {
     transition: background-color 0.2s;
 
 }
+
 .control-button span {
     display: inline-block;
     vertical-align: middle;
 }
+
 .control-button svg {
     flex-shrink: 0;
     vertical-align: middle;
@@ -495,15 +503,6 @@ button:focus, a:focus {
     border: 2px solid #ffffff;
 }
 
-
-
-.accessibility-info {
-    font-size: 0.9rem;
-    color: var(--text-color);
-    transition: color 0.3s;
-}
-
-
 .transcript {
     margin-top: 1rem;
     padding: 0.5rem;
@@ -532,7 +531,6 @@ button:focus, a:focus {
     background-color: var(--card-bg);
     border: 2px solid var(--border-color); /* Thicker border for high contrast */
 }
-
 
 
 .voice-button span {
@@ -646,4 +644,71 @@ button:focus, a:focus {
     .mobile-article-panel {
         display: block;
     }
+}
+
+.info-widgets {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 10px;
+    flex-wrap: wrap;
+    gap: 10px;
+}
+
+.weather-display {
+    border-radius: 8px;
+    padding: 12px;
+    box-shadow: 2px 2px 2px 4px rgba(0, 0, 0, 0.1);
+    max-width: 200px;
+    min-width: 200px;
+    max-height: 400px;
+}
+
+.weather-content {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+}
+
+/* You can also target child elements if needed */
+.weather-content > * {
+    margin: 0px 0;
+}
+
+.weather-display h3 {
+    margin-top: 0;
+    color: var(--primary-color);
+    font-size: 1rem;
+}
+
+.weather-temp {
+    font-size: 1.2rem;
+    font-weight: bold;
+}
+
+.weather-desc {
+    font-size: 0.9rem;
+}
+
+.weather-location {
+    font-size: 0.9rem;
+}
+
+@media (max-width: 768px) {
+    .info-widgets {
+        flex-direction: column;
+    }
+}
+
+.weather-icon-temp {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+}
+
+.weather-icon {
+    width: 48px;
+    height: 48px;
 }

@@ -55,6 +55,7 @@ const preprocessInput = (input) => {
     console.log("Preprocessed input:", processed);
     return processed;
 };
+
 export async function commandSelector(command) {
     let attempts = 0;
     const maxAttempts = tokens.length;
@@ -81,7 +82,10 @@ export async function commandSelector(command) {
         "chữ nhỏ": "7",
         "chế độ tương phản": "8",
         "chế độ tối": "9",
-        "chế độ sáng": "10"
+        "chế độ sáng": "10",
+        "thời tiết": "12",
+        "giá vàng": "13",
+
     };
 
     // Check for direct matches
