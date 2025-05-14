@@ -641,7 +641,7 @@ button:focus, a:focus {
     .mobile-article-panel {
         display: block;
     }
-    
+
     .weather-display h3,
     .weather-desc,
     .weather-location,
@@ -651,6 +651,10 @@ button:focus, a:focus {
     .weather-display,
     .info-widgets {
         display: none;
+    }
+
+    .categories-list {
+        justify-content: left;
     }
 
 

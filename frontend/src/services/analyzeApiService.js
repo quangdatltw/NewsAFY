@@ -4,10 +4,11 @@ export const analyzeWeatherData = async (weatherData) => {
             return "Không thể phân tích dữ liệu thời tiết. Dữ liệu không đầy đủ.";
         }
 
+
         const GEMINI_API_KEY = import.meta.env.VITE_GEMINI_TOKEN;
         const apiUrl = "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-lite:generateContent";
+        weatherData.current.air_quality.pm2_5 = Math.round(weatherData.current.air_quality.pm2_5);
 
-        // Prepare a simplified weather data object for the prompt
         const simplifiedData = {
             location: {
                 name: weatherData.location.name,
@@ -26,15 +27,19 @@ export const analyzeWeatherData = async (weatherData) => {
                 air_quality: weatherData.current.air_quality
             }
         };
+        console.log(simplifiedData);
+
+
 
         const prompt = `
       Dưới đây là dữ liệu thời tiết chi tiết:
       ${JSON.stringify(simplifiedData, null, 2)}
       
-      Hãy tóm tắt thông tin thời tiết này bằng tiếng Việt, với văn phong tự nhiên như một người dẫn chương trình thời tiết. Không dùng câu cảm thán.
-      Tóm tắt cần ngắn gọn, dễ hiểu, không quá 4-6 câu.
-      Nhất định phải bao gồm: tên địa điểm, nhiệt độ, cảm giác nhiệt độ,  độ ẩm, tình trạng thời tiết, và thời gian cập nhật.
+      Diễn giải thông tin thời tiết này chỉ bằng tiếng Việt, với văn phong tự nhiên như một người dẫn chương trình thời tiết. Không dùng câu cảm thán.
+      Tóm tắt cần ngắn gọn, dễ hiểu, không quá 8-10 câu.
+      Nhất định phải bao gồm: tên địa điểm, nhiệt độ, cảm giác nhiệt độ,  độ ẩm, tình trạng thời tiết.
       Nếu có thông tin về chất lượng không khí, chỉ số bụi mịn thì cũng đề cập. Và giải thích rõ ràng về chỉ số chất lượng không khí (AQI) như tốt, trung bình, không tốt cho người nhạy cảm, có hại, rất có hại, nguy hiểm.
+      Cuối cùng thêm thời gian cập nhật.
       Phải viết bằng tiếng Việt, từ ngữ thân thiện, và đầy đủ dấu câu.
     `;
 
@@ -122,7 +127,7 @@ export const analyzeGoldPriceData = async (goldData) => {
       ${JSON.stringify(goldPriceData, null, 2)}
 
       Hãy tóm tắt thông tin giá vàng này bằng tiếng Việt, với văn phong tự nhiên như người đưa tin tài chính.
-      Tóm tắt nhưng đầy đủ thông tin, dễ hiểu.
+      Tóm tắt cần ngắn gọn, dễ hiểu, không quá 8-10 câu.
       Nhất định phải bao gồm: 
       - Giá mua và bán của các loại vàng chính
       - So sánh giữa các loại vàng khác nhau
@@ -240,21 +245,3 @@ export default function vietnameseWeatherCondition(englishCondition) {
 }
 
 // Helper function to describe air quality index
-function getAirQualityDescription(aqiIndex) {
-    switch (aqiIndex) {
-        case 1:
-            return "tốt";
-        case 2:
-            return "trung bình";
-        case 3:
-            return "không tốt cho người nhạy cảm";
-        case 4:
-            return "có hại";
-        case 5:
-            return "rất có hại";
-        case 6:
-            return "nguy hiểm";
-        default:
-            return "không xác định";
-    }
-}

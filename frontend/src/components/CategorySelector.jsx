@@ -27,7 +27,7 @@ const CategorySelector = ({currentCategory, onSelectCategory, categoryData = {}}
                     </button>
                 ))}
             </div>
-            <p className="voice-tip">Mẹo: Nói "chuyên mục [tên]" để thay đổi chuyên mục bằng giọng nói</p>
+            <p className="voice-tip">Nói "chuyên mục [tên]" để thay đổi chuyên mục bằng giọng nói</p>
         </div>
     )
 }

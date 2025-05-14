@@ -1,3 +1,5 @@
+"use client";
+
 import {categorizeArticlesWithAI} from './newsCategorization';
 
 export const fetchNews = async () => {
@@ -70,7 +72,7 @@ const getCategoryCounts = (articles) => {
         const category = article.category || 'general';
         counts[category] = (counts[category] || 0) + 1;
     });
-    counts['general'] = 50;
+    counts['general'] = articles.length;
 
     return counts;
 };
@@ -107,7 +109,6 @@ export const parseRssFeed = (xmlText) => {
             [allLinks[i], allLinks[j]] = [allLinks[j], allLinks[i]];
         }
 
-        // Take the first 10 items from the shuffled array
         return allLinks.slice(0, linkCount);
     } catch (error) {
         console.error("Error parsing RSS feed:", error);

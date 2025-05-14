@@ -30,7 +30,6 @@ const preprocessInput = (input) => {
 
     // Common voice recognition errors in Vietnamese
     const corrections = {
-        "học": "đọc",
         "mọc": "đọc",
         "cọc": "đọc",
         "độc": "đọc",
@@ -66,10 +65,12 @@ export async function commandSelector(command) {
     // Try direct matching for common commands first
     const directMatches = {
         "đọc tin": "1",
-        "đọc": "1",
         "tin tiếp": "2",
         "tiếp theo": "2",
         "tiếp": "2",
+        "Rừng.": "4",
+        "rừng.": "4",
+        "Rừng": "4",
         "tin trước": "3",
         "trước đó": "3",
         "quay lại": "3",
@@ -85,6 +86,7 @@ export async function commandSelector(command) {
         "chế độ sáng": "10",
         "thời tiết": "12",
         "giá vàng": "13",
+        "đọc tiêu đề": "14"
 
     };
 
@@ -141,6 +143,9 @@ export async function commandSelector(command) {
             "9" - Bật chế độ tối (khi người dùng nói chế độ tối)
             "10" - Bật chế độ sáng (khi người dùng nói chế độ sáng)
             "11" - Khi không trùng khớp với lệnh nào
+            "12" - Đọc thời tiết (khi người dùng nói thời tiết)
+            "13" - Đọc giá vàng (khi người dùng nói giá vàng)
+            "14" - Đọc tiêu đề (khi người dùng nói đọc tiêu đề)
             
             Trường hợp đặc biệt:
             Nếu người dùng nói về chuyên mục, trả về theo dạng "5:tên chuyên mục" với tên chuyên mục là một trong các giá trị sau:
