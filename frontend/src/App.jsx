@@ -71,8 +71,10 @@ function App() {
             thời tiết. để nghe thông tin thời tiết.
             giá vàng. để nghe thông tin giá vàng. 
         `;
+        setTimeout(() => {
+            speak(instructions);
+            },200);
 
-        speak(instructions);
     }, [speak]);
 
     const readTitles = useCallback(() => {
@@ -105,7 +107,7 @@ function App() {
         const categories = Object.keys(categoryNameInVietnamese);
 
         const categoryText = `Các chuyên mục hiện có:\n ${categories.map(cat => 
-            categoryNameInVietnamese[cat]).join('. \n ')}. Nói chuyên mục và tên chuyên mục để đọc tin tức trong chuyên mục đó.`;
+            categoryNameInVietnamese[cat]).join('. \n ')}.\n Nói chuyên mục và tên chuyên mục để đọc tin tức trong chuyên mục đó.`;
 
         setSelectedArticleText(categoryText);
         speak(categoryText);
@@ -143,8 +145,10 @@ function App() {
 
         // Set the selected article text for display in the side panel
         setSelectedArticleText(articleContent || "Không có nội dung chi tiết.");
+        setTimeout(() => {
+            speak(textToRead);
+        }, 100)
 
-        speak(textToRead);
     }, [speak, setSelectedArticleText]);
 
     const readArticleByNumber = useCallback((articleNumber) => {
@@ -260,23 +264,34 @@ function App() {
         stop();
         setCategory(newCategory);
         const vietnameseName = categoryNameInVietnamese[newCategory] || newCategory;
-        speak(`Đang chuyển sang chuyên mục ${vietnameseName}`);
+        setTimeout(() => {
+            speak(`Đang chuyển sang chuyên mục ${vietnameseName}`);
+        },200)
+
     }, [stop, speak, setCategory]);
 
     const increaseFontSize = useCallback(() => {
         if (fontSize < 200) {
             setFontSize(prevSize => prevSize + 10);
         }
+
+        setTimeout(() => {
+            speak("Đã tăng cỡ chữ");
+        },200)
     }, [fontSize, setFontSize]);
 
     const decreaseFontSize = useCallback(() => {
         if (fontSize > 80) {
             setFontSize(prevSize => prevSize - 10);
         }
+        setTimeout(() => {
+            speak("Đã giảm cỡ chữ");
+        },200)
     }, [fontSize, setFontSize]);
 
     const toggleContrastMode = useCallback(() => {
         setContrastMode(prev => !prev);
+        speak("Đã đổi chế độ tương phản");
     }, [setContrastMode]);
 
     const toggleDarkMode = useCallback(() => {
@@ -287,6 +302,7 @@ function App() {
                 contrastMode,
                 darkMode: newValue
             }));
+            speak("Đã đổi chế độ tối");
             return newValue;
         });
     }, [fontSize, contrastMode, setDarkMode]);
@@ -298,6 +314,7 @@ function App() {
             contrastMode,
             darkMode: false
         }));
+        speak("Đã chuyển chế độ sáng");
     }, [fontSize, contrastMode, setDarkMode]);
 
     const showWeatherInfo = useCallback(async () => {
@@ -491,11 +508,12 @@ function App() {
         setArticles(filteredArticles);
         setCurrentArticleIndex(0);
 
-        // Only announce category changes if we're past initial load
-        // and the category reference has actually changed
+
         if (!isInitialLoad.current && filteredArticles.length > 0) {
             const vietnameseName = categoryNameInVietnamese[category] || category;
             speak(`Đã tải ${filteredArticles.length} bài báo trong chuyên mục ${vietnameseName}.`);
+
+
         } else if (!isInitialLoad.current && currentCategoryRef.current !== category) {
             speak('Không tìm thấy bài báo nào trong chuyên mục này.');
         }
