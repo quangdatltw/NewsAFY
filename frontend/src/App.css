@@ -122,6 +122,55 @@ button:focus, a:focus {
     font-weight: bold;
 
 }
+.accessibility-controls {
+    display: flex;
+    gap: 4rem;
+}
+
+.accessibility-controls {
+    display: flex;
+    justify-content: space-between;
+    gap: 2rem;
+    margin-bottom: 1rem;
+}
+
+.controls-section, .voice-commands-guide {
+    flex: 1;
+}
+
+.voice-commands-guide {
+    border-left: 1px solid #ccc;
+    padding-left: 1.5rem;
+}
+
+.commands-list {
+    display: flex;
+    gap: 2rem;
+}
+
+.command-column {
+    flex: 1;
+}
+
+.command-column p {
+    font-size: 1.1rem;
+    font-weight: bold;
+    margin: 0.5rem 0;
+}
+
+@media (max-width: 768px) {
+    .accessibility-controls {
+        flex-direction: column;
+    }
+
+    .voice-commands-guide {
+        border-left: none;
+        border-top: 1px solid #ccc;
+        padding-left: 0;
+        padding-top: 1rem;
+        margin-top: 1rem;
+    }
+}
 
 /* Accessibility Controls */
 .accessibility-controls,
