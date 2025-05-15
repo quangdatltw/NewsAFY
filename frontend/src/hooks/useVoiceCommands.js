@@ -49,6 +49,11 @@ export const useVoiceCommands = ({commands, continuous = true}) => {
                         commands[cmd](param);
                         return true;
                     }
+                    if (cmd === "15" && commands[cmd]) {
+                        console.log(`Executing category command with param: ${param}`);
+                        commands[cmd](param);
+                        return true;
+                    }
                 }
                 // Regular command
                 else if (commands[commandResult]) {

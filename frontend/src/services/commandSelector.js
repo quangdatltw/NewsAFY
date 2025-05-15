@@ -70,6 +70,10 @@ export async function commandSelector(command) {
         "tiếp": "2",
         "Rừng.": "4",
         "rừng.": "4",
+        "dùng.": "4",
+        "dùng": "4",
+        "Dùng.": "4",
+        "Dùng": "4",
         "Rừng": "4",
         "tin trước": "3",
         "trước đó": "3",
@@ -146,6 +150,7 @@ export async function commandSelector(command) {
             "12" - Đọc thời tiết (khi người dùng nói thời tiết)
             "13" - Đọc giá vàng (khi người dùng nói giá vàng)
             "14" - Đọc tiêu đề (khi người dùng nói đọc tiêu đề)
+         
             
             Trường hợp đặc biệt:
             Nếu người dùng nói về chuyên mục, trả về theo dạng "5:tên chuyên mục" với tên chuyên mục là một trong các giá trị sau:
@@ -156,6 +161,9 @@ export async function commandSelector(command) {
             - health (khi người dùng nói chuyên mục sức khỏe)
             - science (khi người dùng nói chuyên mục khoa học)
             - general (khi người dùng nói chuyên mục tổng hợp)
+            
+            Trường hợp đặc biệt:
+            Nếu người dùng nói đọc bài số [số thứ tự], trả về theo dạng "15:[số thứ tự]". Ví dụ: "đọc bài số 3" trả về "15:3", "bài 2, 6" trả về "15:25".
             
             Nếu không trùng khớp với lệnh nào, hoặc người dùng nói quá khác so với lệnh trả về số 11. Chỉ trả về số lệnh, không thêm giải thích.
             `;

@@ -11,7 +11,6 @@ import "./App.css"
 import {fetchWeatherData} from "@/services/weatherService.js";
 import {fetchGoldPrice} from "@/services/goldPriceService.js";
 import WeatherDisplay from "@/components/WeatherDisplay.jsx";
-import ReactDOM from 'react-dom';
 
 function App() {
     const [allArticles, setAllArticles] = useState([])
@@ -30,11 +29,21 @@ function App() {
     const isInitialLoad = useRef(true)
     const isLoadingRef = useRef(false)
     const articleStateRef = useRef([]);
+    const currentArticleIndexRef = useRef(currentArticleIndex);
+    const currentCategoryRef = useRef(category);
 
     // Update the ref whenever the articles state changes
     useEffect(() => {
         articleStateRef.current = articles;
     }, [articles]);
+
+    useEffect(() => {
+        currentArticleIndexRef.current = currentArticleIndex;
+    }, [currentArticleIndex]);
+
+    useEffect(() => {
+        currentCategoryRef.current = category;
+    }, [category]);
 
     const {speak, stop, speaking} = useSpeechSynthesis()
 
@@ -44,17 +53,18 @@ function App() {
         const instructions = `
             Hướng dẫn sử dụng bằng giọng nói:
             Nói đọc. để nghe nội dung bài báo hiện tại.
+            Đọc số thứ tự bài báo. để nghe nội dung bài báo theo số thứ tự.
             tiếp theo. để chuyển đến bài báo tiếp theo.
             trước đó. để quay lại bài báo trước.
             dừng lại. để dừng đọc.
+            đọc tiêu đề. để nghe tất cả tiêu đề bài báo.
             chuyên mục. và tên chuyên mục. để lọc tin tức theo chuyên mục.
             danh sách chuyên mục bao gồm: tổng hợp, kinh doanh, công nghệ, giải trí, thể thao, sức khỏe, khoa học.
             tăng hoặc giảm cỡ chữ. để điều chỉnh kích thước chữ.
             chế độ tương phản. để bật tắt chế độ tương phản cao.
             chế độ tối hoặc sáng. để thay đổi giao diện.
             thời tiết. để nghe thông tin thời tiết.
-            giá vàng. để nghe thông tin giá vàng.
-            đọc tiêu đề. để nghe tất cả tiêu đề bài báo.
+            giá vàng. để nghe thông tin giá vàng. 
         `;
 
         speak(instructions);
@@ -72,11 +82,11 @@ function App() {
             return;
         }
 
-        const categoryName = categoryNameInVietnamese[category] || category;
-        let titleText = `Đọc tiêu đề ${currentArticles.length} bài báo trong chuyên mục ${categoryName}. `;
+        const categoryName = categoryNameInVietnamese[currentCategoryRef.current] || category;
+        let titleText = `Tiêu đề ${currentArticles.length} bài báo trong chuyên mục ${categoryName}. `;
 
         currentArticles.forEach((article, index) => {
-            titleText += `\nBài ${index + 1}: ${article.title}. `;
+            titleText += `\nBài ${index + 1}: ${article.title} `;
         });
 
         // Set the selected article text to make titles visible
@@ -90,7 +100,8 @@ function App() {
         const currentArticles = articleStateRef.current;
         if (currentArticles.length === 0) return;
 
-        const article = currentArticles[currentArticleIndex];
+        // Use currentArticleIndexRef instead of currentArticleIndex for the most up-to-date value
+        const article = currentArticles[currentArticleIndexRef.current];
 
         // Format date information if available
         let dateInfo = "";
@@ -98,12 +109,11 @@ function App() {
             // Transform date format
             const dateParts = article.metadata.date.split(", ");
             if (dateParts.length >= 2) {
-                const dayOfWeek = dateParts[0]; // e.g., "Thứ bảy"
-                const dateAndTime = dateParts[1].split(" "); // e.g., ["10/5/2025", "21:00"]
+                const dayOfWeek = dateParts[0];
+                const dateAndTime = dateParts[1].split(" ");
 
                 if (dateAndTime.length >= 1) {
-                    const time = dateParts[2]?.split(" ")[0] || ""; // e.g., "21:00"
-                    // Extract date without year
+                    const time = dateParts[2]?.split(" ")[0] || "";
                     const dateWithoutYear = dateAndTime[0].split("/").slice(0, 2).join("tháng");
                     dateInfo = `. bài viết lúc ${time} ${dayOfWeek}, ${dateWithoutYear}`;
                 }
@@ -114,18 +124,65 @@ function App() {
         const articleContent = article.textContent;
 
         // Combine title, date info, description and content for reading
-        const textToRead = `${article.title}${dateInfo}. Tác giả ${article.metadata.author}. ${article.description || ""}. ${articleContent}`;
+        const textToRead = `${article.title}${dateInfo}. Tác giả ${article.metadata.author || "không rõ"}. ${article.description || ""}. ${articleContent}`;
 
         // Set the selected article text for display in the side panel
         setSelectedArticleText(articleContent || "Không có nội dung chi tiết.");
 
         speak(textToRead);
-    }, [speak, currentArticleIndex, setSelectedArticleText]);
+    }, [speak, setSelectedArticleText]);
+
+    const readArticleByNumber = useCallback((articleNumber) => {
+        const currentArticles = articleStateRef.current;
+
+        // Convert to number and adjust for zero-indexing
+        const index = parseInt(articleNumber, 10) - 1;
+
+        // Validate the index
+        if (isNaN(index) || index < 0 || index >= currentArticles.length) {
+            speak(`Bài báo số ${articleNumber} không tồn tại. Hiện có ${currentArticles.length} bài báo.`);
+            return;
+        }
+
+        // Set the current article index and read it
+        setCurrentArticleIndex(index);
+        speak(`Chuyển đến bài báo số ${index + 1}`);
+
+        // Use timeout to ensure state updates before reading
+        setTimeout(() => {
+            const articleToRead = currentArticles[index];
+
+            // Format date information
+            let dateInfo = "";
+            if (articleToRead.metadata && articleToRead.metadata.date) {
+                const dateParts = articleToRead.metadata.date.split(", ");
+                if (dateParts.length >= 2) {
+                    const dayOfWeek = dateParts[0];
+                    const dateAndTime = dateParts[1].split(" ");
+                    if (dateAndTime.length >= 1) {
+                        const time = dateParts[2]?.split(" ")[0] || "";
+                        const dateWithoutYear = dateAndTime[0].split("/").slice(0, 2).join("tháng");
+                        dateInfo = `. bài viết lúc ${time} ${dayOfWeek}, ${dateWithoutYear}`;
+                    }
+                }
+            }
+
+            // Get content and read it
+            const articleContent = articleToRead.textContent;
+            const textToRead = `${articleToRead.title}${dateInfo}. Tác giả ${articleToRead.metadata?.author || "không rõ"}. ${articleToRead.description || ""}. ${articleContent}`;
+
+            // Set the selected article text for display
+            setSelectedArticleText(articleContent || "Không có nội dung chi tiết.");
+
+            // Read the article
+            speak(textToRead);
+        }, 200);
+    }, [speak, setCurrentArticleIndex, setSelectedArticleText]);
 
     const navigateArticle = useCallback((direction) => {
         stop();
         const currentArticles = articleStateRef.current;
-        let newIndex = currentArticleIndex + direction;
+        let newIndex = currentArticleIndexRef.current + direction;
 
         if (newIndex < 0) {
             newIndex = 0;
@@ -133,7 +190,7 @@ function App() {
 
         if (newIndex >= 0 && newIndex < currentArticles.length) {
             setCurrentArticleIndex(newIndex);
-            speak(`Bài báo ${newIndex + 1} trong số ${currentArticles.length}. Nói "đọc" để nghe nội dung.`);
+            speak(`Bài báo ${newIndex + 1} trong số ${currentArticles.length}.`);
         } else {
             speak(newIndex < 0 ? "Bạn đang ở bài đầu tiên" : "Bạn đang ở bài cuối cùng");
         }
@@ -276,7 +333,8 @@ function App() {
             },
             "12": showWeatherInfo,
             "13": showGoldPriceInfo,
-            "14": readTitles
+            "14": readTitles,
+            "15": readArticleByNumber,
         },
     });
 
@@ -289,25 +347,10 @@ function App() {
             setIsLoading(true);
             setError(null);
 
-            // Check for cached data first (valid for 5 minutes)
-            const cachedData = localStorage.getItem('newsCache');
-            const cacheTimestamp = localStorage.getItem('newsCacheTimestamp');
-            const cacheExpiry = 5 * 60 * 1000; // 5 minutes
 
             let data;
-            if (cachedData && cacheTimestamp && (Date.now() - parseInt(cacheTimestamp)) < cacheExpiry) {
-                const parsedData = JSON.parse(cachedData);
-                console.log('Using cached news data:', parsedData.articles.length, 'articles');
-                data = parsedData;
-            } else {
-                // Fetch all news articles once
-                console.log('Fetching fresh news data...');
-                data = await fetchNews();
+            data = await fetchNews();
 
-                // Store in cache for future use
-                localStorage.setItem('newsCache', JSON.stringify(data));
-                localStorage.setItem('newsCacheTimestamp', Date.now().toString());
-            }
 
             // Remove flushSync - use regular state updates instead
             setCategoryData(data.categoryData);
@@ -324,35 +367,47 @@ function App() {
         }
     }, [speak]);
 
-    const filterArticlesByCategory = useCallback((currentCategory) => {
+    // Create a separate effect for category changes
+    useEffect(() => {
         if (allArticles.length === 0) return;
 
         // Filter articles by selected category
-        const filteredArticles = currentCategory === "general"
+        const filteredArticles = category === "general"
             ? allArticles
-            : allArticles.filter(article => article.category === currentCategory);
+            : allArticles.filter(article => article.category === category);
 
         setArticles(filteredArticles);
         setCurrentArticleIndex(0);
 
-        setTimeout(() => {
-            if (isInitialLoad.current && isWelcomeComplete && filteredArticles.length > 0) {
-                isInitialLoad.current = false;
-                speak(`Đã tải ${filteredArticles.length} bài báo. Nói đọc để đọc bài đầu, hoặc nói đọc tiêu đề để nghe tiêu đề các bài báo`);
-            } else if (!isInitialLoad.current && filteredArticles.length > 0) {
-                const vietnameseName = categoryNameInVietnamese[currentCategory] || currentCategory;
-                speak(`Đã tải ${filteredArticles.length} bài báo trong chuyên mục ${vietnameseName}.`);
-            } else if (!isInitialLoad.current || isWelcomeComplete) {
-                speak('Không tìm thấy bài báo nào trong chuyên mục này.');
-            }
-        }, 3000);
-    }, [allArticles, isWelcomeComplete, speak]);
+        // Only announce category changes if we're past initial load
+        // and the category reference has actually changed
+        if (!isInitialLoad.current && filteredArticles.length > 0) {
+            const vietnameseName = categoryNameInVietnamese[category] || category;
+            speak(`Đã tải ${filteredArticles.length} bài báo trong chuyên mục ${vietnameseName}.`);
+        } else if (!isInitialLoad.current && currentCategoryRef.current !== category) {
+            speak('Không tìm thấy bài báo nào trong chuyên mục này.');
+        }
+
+        // Update current category reference
+        currentCategoryRef.current = category;
+    }, [category, allArticles]);
+
+    // Separate effect for initial load announcement
+    useEffect(() => {
+        if (isInitialLoad.current && isWelcomeComplete && articles.length > 0) {
+            isInitialLoad.current = false;
+            speak(`Đã tải ${articles.length} bài báo. Nói đọc để đọc bài đầu, hoặc nói đọc tiêu đề để nghe tiêu đề các bài báo`);
+        }
+    }, [articles, isWelcomeComplete, speak]);
 
     // Load news and welcome message on initial render
     useEffect(() => {
         // Only read instructions on first load and only once
         if (isInitialLoad.current) {
-            loadNews();
+            setTimeout(() => {
+                loadNews();
+            }, 2000);
+
             const welcomeMessage = `Chào mừng bạn đã đến với NGHE TIN NHANH . Nhấn giữ phím cách để nói.
                 Nói hướng dẫn để nghe hướng dẫn sử dụng. Đang tải tin tức, xin vui lòng chờ.`;
 
@@ -365,12 +420,7 @@ function App() {
             stop();
         };
     }, [loadNews, speak, stop]);
-    
 
-    // Filter articles when category or allArticles changes
-    useEffect(() => {
-        filterArticlesByCategory(category);
-    }, [category, allArticles, filterArticlesByCategory]);
 
     // Apply accessibility settings
     useEffect(() => {
@@ -447,10 +497,13 @@ function App() {
                 <header className="app-header">
                     <h1>Nghe Tin Nhanh</h1>
                     <div className="info-widgets">
-                        <p className="accessibility-info">
-                            Điều khiển lệnh thoại: <br></br>đọc<br></br> tiếp theo<br></br>trước đó <br></br>dừng
-                            lại<br></br> chuyên mục [tên], <br></br>
-                        </p>
+                        <div className="accessibility-info">
+                            Điều khiển lệnh thoại: <br></br>
+                            <div className="info-widgets">
+                                <div>- đọc<br></br>- tiếp theo<br></br>- trước đó <br></br>- dừng lại<br></br></div>
+                                <div> - chuyên mục [tên] <br></br>- đọc bài [số thứ tự] <br></br>- đọc tiêu đề <br></br> </div>
+                            </div>
+                        </div>
                         <WeatherDisplay/>
                     </div>
                 </header>
