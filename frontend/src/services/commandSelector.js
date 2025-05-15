@@ -150,6 +150,8 @@ export async function commandSelector(command) {
             "12" - Đọc thời tiết (khi người dùng nói thời tiết)
             "13" - Đọc giá vàng (khi người dùng nói giá vàng)
             "14" - Đọc tiêu đề (khi người dùng nói đọc tiêu đề)
+            "16" - Đọc ngẫu nhiên (khi người dùng nói đọc ngẫu nhiên)
+            "17" - Đọc tên các chuyên mục (khi người dùng nói đọc tên các chuyên mục, hỏi có bao nhiêu chuyên mục)
          
             
             Trường hợp đặc biệt:

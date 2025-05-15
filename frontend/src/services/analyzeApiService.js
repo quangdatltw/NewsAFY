@@ -36,8 +36,8 @@ export const analyzeWeatherData = async (weatherData) => {
       ${JSON.stringify(simplifiedData, null, 2)}
       
       Diễn giải thông tin thời tiết này chỉ bằng tiếng Việt, với văn phong tự nhiên như một người dẫn chương trình thời tiết. Không dùng câu cảm thán.
-      Tóm tắt cần ngắn gọn, dễ hiểu, không quá 8-10 câu.
-      Nhất định phải bao gồm: tên địa điểm, nhiệt độ, cảm giác nhiệt độ,  độ ẩm, tình trạng thời tiết.
+      Tóm tắt cần ngắn gọn, dễ hiểu, rõ ràng không quá 8-10 câu.
+      Nhất định phải bao gồm: tên địa điểm, nhiệt độ, độ ẩm, hướng gió, tình trạng thời tiết.
       Nếu có thông tin về chất lượng không khí, chỉ số bụi mịn thì cũng đề cập. Và giải thích rõ ràng về chỉ số chất lượng không khí (AQI) như tốt, trung bình, không tốt cho người nhạy cảm, có hại, rất có hại, nguy hiểm.
       Cuối cùng thêm thời gian cập nhật.
       Phải viết bằng tiếng Việt, từ ngữ thân thiện, và đầy đủ dấu câu.
@@ -127,7 +127,7 @@ export const analyzeGoldPriceData = async (goldData) => {
       ${JSON.stringify(goldPriceData, null, 2)}
 
       Hãy tóm tắt thông tin giá vàng này bằng tiếng Việt, với văn phong tự nhiên như người đưa tin tài chính.
-      Tóm tắt cần ngắn gọn, dễ hiểu, không quá 8-10 câu.
+      Tóm tắt cần ngắn gọn, dễ hiểu, đầy đủ, rõ ràng không quá 8-10 câu.
       Nhất định phải bao gồm: 
       - Giá mua và bán của các loại vàng chính
       - So sánh giữa các loại vàng khác nhau
@@ -228,6 +228,7 @@ export default function vietnameseWeatherCondition(englishCondition) {
         "Clear": "Quang đãng",
         "Partly cloudy": "Có mây rải rác",
         "Patchy rain nearby": "Mưa nhỏ rải rác",
+        "Moderate or heavy rain shower": "Vài nơi có mưa vừa",
         "Cloudy": "Nhiều mây",
         "Overcast": "U ám",
         "Mist": "Sương mù nhẹ",

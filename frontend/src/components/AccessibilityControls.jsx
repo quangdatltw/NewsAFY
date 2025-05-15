@@ -36,7 +36,7 @@ const AccessibilityControls = ({
                     className={`control-button ${contrastMode ? 'active' : ''}`}
                     aria-label={contrastMode ? "Tắt tương phản cao" : "Bật tương phản cao"}
                 >
-                    <Eye size={24}/>
+                    <Eye size={32}/>
                     <span>{contrastMode ? "  Tương phản thường" : "  Tương phản cao"}</span>
                 </button>
                 <button
@@ -45,8 +45,8 @@ const AccessibilityControls = ({
                     className={`control-button ${darkMode ? 'active' : ''}`}
                     aria-label={darkMode ? "Chuyển sang chế độ sáng" : "Chuyển sang chế độ tối"}
                 >
-                    {darkMode ? <Sun size={24}/> : <Moon size={24}/>}
-                    <span>{darkMode ? "  Chế độ sáng" : "  Chế độ tối"}</span>
+                    {darkMode ? <Sun size={32}/> : <Moon size={32}/>}
+                    <span>{darkMode ? "         Chế độ sáng" : "       Chế độ tối"}</span>
 
                 </button>
             </div>

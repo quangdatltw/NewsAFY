@@ -52,17 +52,20 @@ function App() {
     const readInstruction = useCallback(() => {
         const instructions = `
             Hướng dẫn sử dụng bằng giọng nói:
+            . Để điều chỉnh giao diện:
+            tăng hoặc giảm cỡ chữ. để điều chỉnh kích thước chữ.
+            chế độ tương phản. để bật tắt chế độ tương phản cao.
+            chế độ tối hoặc sáng. để thay đổi giao diện.
+            ......
             Nói đọc. để nghe nội dung bài báo hiện tại.
-            Đọc số thứ tự bài báo. để nghe nội dung bài báo theo số thứ tự.
+            Đọc kèm, thứ tự bài báo, hoặc ngẫu nhiên. để nghe nội dung bài báo theo số thứ tự hoặc ngẫu nhiên.
             tiếp theo. để chuyển đến bài báo tiếp theo.
             trước đó. để quay lại bài báo trước.
             dừng lại. để dừng đọc.
             đọc tiêu đề. để nghe tất cả tiêu đề bài báo.
             chuyên mục. và tên chuyên mục. để lọc tin tức theo chuyên mục.
             danh sách chuyên mục bao gồm: tổng hợp, kinh doanh, công nghệ, giải trí, thể thao, sức khỏe, khoa học.
-            tăng hoặc giảm cỡ chữ. để điều chỉnh kích thước chữ.
-            chế độ tương phản. để bật tắt chế độ tương phản cao.
-            chế độ tối hoặc sáng. để thay đổi giao diện.
+           
             thời tiết. để nghe thông tin thời tiết.
             giá vàng. để nghe thông tin giá vàng. 
         `;
@@ -95,6 +98,16 @@ function App() {
         // Read the titles
         speak(titleText);
     }, [speak, category, setSelectedArticleText]);
+
+    const readAllCategories = useCallback(() => {
+        const categories = Object.keys(categoryNameInVietnamese);
+
+        const categoryText = `Các chuyên mục hiện có:\n ${categories.map(cat => 
+            categoryNameInVietnamese[cat]).join('. \n ')}. Nói chuyên mục và tên chuyên mục để đọc tin tức trong chuyên mục đó.`;
+
+        setSelectedArticleText(categoryText);
+        speak(categoryText);
+    }, [speak, setSelectedArticleText]);
 
     const readCurrentArticle = useCallback(() => {
         const currentArticles = articleStateRef.current;
@@ -151,6 +164,51 @@ function App() {
         // Use timeout to ensure state updates before reading
         setTimeout(() => {
             const articleToRead = currentArticles[index];
+
+            // Format date information
+            let dateInfo = "";
+            if (articleToRead.metadata && articleToRead.metadata.date) {
+                const dateParts = articleToRead.metadata.date.split(", ");
+                if (dateParts.length >= 2) {
+                    const dayOfWeek = dateParts[0];
+                    const dateAndTime = dateParts[1].split(" ");
+                    if (dateAndTime.length >= 1) {
+                        const time = dateParts[2]?.split(" ")[0] || "";
+                        const dateWithoutYear = dateAndTime[0].split("/").slice(0, 2).join("tháng");
+                        dateInfo = `. bài viết lúc ${time} ${dayOfWeek}, ${dateWithoutYear}`;
+                    }
+                }
+            }
+
+            // Get content and read it
+            const articleContent = articleToRead.textContent;
+            const textToRead = `${articleToRead.title}${dateInfo}. Tác giả ${articleToRead.metadata?.author || "không rõ"}. ${articleToRead.description || ""}. ${articleContent}`;
+
+            // Set the selected article text for display
+            setSelectedArticleText(articleContent || "Không có nội dung chi tiết.");
+
+            // Read the article
+            speak(textToRead);
+        }, 200);
+    }, [speak, setCurrentArticleIndex, setSelectedArticleText]);
+
+    const readRandomArticle = useCallback(() => {
+        const currentArticles = articleStateRef.current;
+        if (currentArticles.length === 0) {
+            speak("Không có bài báo nào để đọc ngẫu nhiên.");
+            return;
+        }
+
+        // Generate random index within array bounds
+        const randomIndex = Math.floor(Math.random() * currentArticles.length);
+
+        // Set the current article index and read it
+        setCurrentArticleIndex(randomIndex);
+        speak(`Chuyển đến bài báo ngẫu nhiên số ${randomIndex + 1}`);
+
+        // Use timeout to ensure state updates before reading
+        setTimeout(() => {
+            const articleToRead = currentArticles[randomIndex];
 
             // Format date information
             let dateInfo = "";
@@ -335,6 +393,8 @@ function App() {
             "13": showGoldPriceInfo,
             "14": readTitles,
             "15": readArticleByNumber,
+            "16": readRandomArticle,
+            "17": readAllCategories,
         },
     });
 
@@ -501,7 +561,7 @@ function App() {
                             Điều khiển lệnh thoại: <br></br>
                             <div className="info-widgets">
                                 <div>- đọc<br></br>- tiếp theo<br></br>- trước đó <br></br>- dừng lại<br></br></div>
-                                <div> - chuyên mục [tên] <br></br>- đọc bài [số thứ tự] <br></br>- đọc tiêu đề <br></br> </div>
+                                <div> - chuyên mục [tên] <br></br>- đọc bài [số thứ tự] <br></br> - đọc bài ngẫu nhiên  <br></br>- đọc tiêu đề <br></br> </div>
                             </div>
                         </div>
                         <WeatherDisplay/>
