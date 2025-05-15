@@ -37,7 +37,7 @@ export const analyzeWeatherData = async (weatherData) => {
       
       Diễn giải thông tin thời tiết này chỉ bằng tiếng Việt, với văn phong tự nhiên như một người dẫn chương trình thời tiết. Không dùng câu cảm thán.
       Tóm tắt cần ngắn gọn, dễ hiểu, rõ ràng không quá 8-10 câu.
-      Nhất định phải bao gồm: tên địa điểm, nhiệt độ, độ ẩm, hướng gió, tình trạng thời tiết.
+      Nhất định phải bao gồm: tên địa điểm, nhiệt độ (không nói cảm giác nhiệt độ), độ ẩm, hướng gió, tình trạng thời tiết.
       Nếu có thông tin về chất lượng không khí, chỉ số bụi mịn thì cũng đề cập. Và giải thích rõ ràng về chỉ số chất lượng không khí (AQI) như tốt, trung bình, không tốt cho người nhạy cảm, có hại, rất có hại, nguy hiểm.
       Cuối cùng thêm thời gian cập nhật.
       Phải viết bằng tiếng Việt, từ ngữ thân thiện, và đầy đủ dấu câu.
@@ -229,6 +229,7 @@ export default function vietnameseWeatherCondition(englishCondition) {
         "Partly cloudy": "Có mây rải rác",
         "Patchy rain nearby": "Mưa nhỏ rải rác",
         "Moderate or heavy rain shower": "Vài nơi có mưa vừa",
+        "Light rain shower": "Mưa nhẹ có nắng",
         "Cloudy": "Nhiều mây",
         "Overcast": "U ám",
         "Mist": "Sương mù nhẹ",

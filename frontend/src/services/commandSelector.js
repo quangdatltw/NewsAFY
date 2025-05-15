@@ -70,10 +70,6 @@ export async function commandSelector(command) {
         "tiếp": "2",
         "Rừng.": "4",
         "rừng.": "4",
-        "dùng.": "4",
-        "dùng": "4",
-        "Dùng.": "4",
-        "Dùng": "4",
         "Rừng": "4",
         "tin trước": "3",
         "trước đó": "3",
@@ -136,8 +132,8 @@ export async function commandSelector(command) {
             Respond only with a single digit number representing the command.
             
             Mã số lệnh tương ứng:
-            "0" - Đọc hướng dẫn sử dụng (khi người dùng nói hướng dẫn, hướng dẫn sử dụng)
-            "1" - Đọc tin tức hiện tại (khi người dùng nói đọc tin, đọc, đọc bài)
+            "0" - Đọc hướng dẫn sử dụng, cách dùng trang web (khi người dùng nói hướng dẫn, hướng dẫn sử dụng, cách để dùng trang web)
+            "1" - Đọc tin tức hiện tại (khi người dùng nói đọc tin, đọc, đọc bài, đọc bài báo)
             "2" - Chuyển sang tin tiếp theo (khi người dùng nói tin tiếp, tiếp theo, tiếp)
             "3" - Quay lại tin trước đó (khi người dùng nói tin trước, trước đó, quay lại)
             "4" - Dừng việc đọc (khi người dùng nói dừng, dừng lại, tạm dừng)
@@ -152,6 +148,7 @@ export async function commandSelector(command) {
             "14" - Đọc tiêu đề (khi người dùng nói đọc tiêu đề)
             "16" - Đọc ngẫu nhiên (khi người dùng nói đọc ngẫu nhiên)
             "17" - Đọc tên các chuyên mục (khi người dùng nói đọc tên các chuyên mục, hỏi có bao nhiêu chuyên mục)
+            
          
             
             Trường hợp đặc biệt:
@@ -165,7 +162,10 @@ export async function commandSelector(command) {
             - general (khi người dùng nói chuyên mục tổng hợp)
             
             Trường hợp đặc biệt:
-            Nếu người dùng nói đọc bài số [số thứ tự], trả về theo dạng "15:[số thứ tự]". Ví dụ: "đọc bài số 3" trả về "15:3", "bài 2, 6" trả về "15:25".
+            Nếu người dùng nói đọc bài số [số thứ tự], trả về theo dạng "15:[số thứ tự]". Ví dụ: "đọc bài số 3" trả về "15:3", "bài 2, 5" trả về "15:25".
+            
+            Trường hợp đặc biệt:
+            Nếu người dùng nói tìm kiếm [từ khoá], trả về theo dạng "18:[từ khoá]". Ví dụ: "tìm kiếm ôtô" trả về "18:ôtô".
             
             Nếu không trùng khớp với lệnh nào, hoặc người dùng nói quá khác so với lệnh trả về số 11. Chỉ trả về số lệnh, không thêm giải thích.
             `;
@@ -181,7 +181,7 @@ export async function commandSelector(command) {
                     {role: "user", content: prompt}
                 ],
                 temperature: 0.3,
-                max_tokens: 10,
+                max_tokens: 20,
                 model: model
             });
 

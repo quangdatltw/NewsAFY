@@ -607,6 +607,16 @@ button:focus, a:focus {
 }
 
 
+@media (min-width: 768px) {
+    .info-widgets {
+        display: flex;
+        justify-content: space-between;
+        margin-bottom: 5px;
+        flex-wrap: wrap;
+        gap: 60px;
+    }
+
+}
 
 @media (max-width: 768px) {
     .news-card {
@@ -650,9 +660,15 @@ button:focus, a:focus {
     .weather-temp,
     .weather-icon-temp,
     .weather-icon,
-    .weather-display,
-    .info-widgets {
+    .weather-display {
         display: none;
+        gap: 10px;
+    }
+    .info-widgets {
+        display: flex;
+        justify-content: flex-start;
+        margin-bottom: 5px;
+        flex-wrap: wrap;
         gap: 10px;
     }
 
@@ -663,13 +679,7 @@ button:focus, a:focus {
 
 }
 
-.info-widgets {
-    display: flex;
-    justify-content: space-between;
-    margin-bottom: 10px;
-    flex-wrap: wrap;
-    gap: 30px;
-}
+
 
 .weather-display {
     border-radius: 8px;

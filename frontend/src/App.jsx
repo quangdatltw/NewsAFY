@@ -11,6 +11,7 @@ import "./App.css"
 import {fetchWeatherData} from "@/services/weatherService.js";
 import {fetchGoldPrice} from "@/services/goldPriceService.js";
 import WeatherDisplay from "@/components/WeatherDisplay.jsx";
+import {searchNewsByKeyword} from "@/services/newsSelectorByKeyword.js";
 
 function App() {
     const [allArticles, setAllArticles] = useState([])
@@ -58,7 +59,8 @@ function App() {
             chế độ tối hoặc sáng. để thay đổi giao diện.
             ......
             Nói đọc. để nghe nội dung bài báo hiện tại.
-            Đọc kèm, thứ tự bài báo, hoặc ngẫu nhiên. để nghe nội dung bài báo theo số thứ tự hoặc ngẫu nhiên.
+            Đọc kèm, thứ tự bài báo, hoặc ngẫu nhiên. để nghe nội dung bài báo theo số thứ tự hoặc ngẫu nhiên..
+            Tìm kiếm. kèm từ khoá. để tìm kiếm bài báo theo từ khoá.
             tiếp theo. để chuyển đến bài báo tiếp theo.
             trước đó. để quay lại bài báo trước.
             dừng lại. để dừng đọc.
@@ -303,7 +305,10 @@ function App() {
             const data = await fetchWeatherData();
             const weatherSummary = await analyzeWeatherData(data);
             setSelectedArticleText(weatherSummary);
-            speak(weatherSummary);
+            setTimeout(() => {
+                speak(weatherSummary);
+            }, 200);
+
         } catch (error) {
             console.error("Error fetching weather data:", error);
             const errorMessage = "Không thể tải thông tin thời tiết.";
@@ -317,7 +322,9 @@ function App() {
             const data = await fetchGoldPrice();
             const goldSummary = await analyzeGoldPriceData(data);
             setSelectedArticleText(goldSummary);
-            speak(goldSummary);
+            setTimeout(() => {
+                speak(goldSummary);
+            }, 200);
         } catch (error) {
             console.error("Error fetching gold price data:", error);
             const errorMessage = "Không thể tải thông tin giá vàng.";
@@ -361,6 +368,50 @@ function App() {
         }, 200);
     }, [speak, setCurrentArticleIndex, setSelectedArticleText]);
 
+    const findNewsByKeyword = useCallback(async (keyword) => {
+        const currentArticles = articleStateRef.current;
+
+        if (!keyword || currentArticles.length === 0) {
+            speak("Vui lòng cung cấp từ khóa để tìm kiếm.");
+            return;
+        }
+
+        speak(`Đang tìm kiếm bài báo với từ khóa ${keyword}, vui lòng đợi.`);
+
+        try {
+            const result = await searchNewsByKeyword(keyword, currentArticles);
+
+            if (!result.success || !result.matchedIndices || result.matchedIndices.length === 0) {
+                speak(`Không tìm thấy bài báo nào phù hợp với từ khóa ${keyword}.`);
+                return;
+            }
+
+            // Report how many matches were found
+            speak(result.message);
+
+            // Read the titles of found articles
+            setTimeout(() => {
+                const titles = result.matchedIndices.map((index, i) =>
+                    `Bài ${i + 1}: ${currentArticles[index].title}`
+                ).join('. ');
+
+                speak(titles, () => {
+                    // After reading all titles, set the first found article as current
+                    if (result.matchedIndices.length > 0) {
+                        const bestMatchIndex = result.matchedIndices[0];
+                        setCurrentArticleIndex(bestMatchIndex);
+                        setSelectedArticleText(currentArticles[bestMatchIndex].textContent || "Không có nội dung chi tiết.");
+                        speak(`Đã chuyển đến bài báo phù hợp nhất. Nói đọc để nghe nội dung.`);
+                    }
+                });
+            }, 300);
+
+        } catch (error) {
+            console.error("Error searching news:", error);
+            speak(`Đã xảy ra lỗi khi tìm kiếm. Vui lòng thử lại.`);
+        }
+    }, [speak, setCurrentArticleIndex, setSelectedArticleText, articleStateRef]);
+
     const categoryNameInVietnamese = {
         "general": "tổng hợp",
         "politics": "chính trị",
@@ -395,6 +446,7 @@ function App() {
             "15": readArticleByNumber,
             "16": readRandomArticle,
             "17": readAllCategories,
+            "18": findNewsByKeyword,
         },
     });
 
@@ -466,7 +518,7 @@ function App() {
         if (isInitialLoad.current) {
             setTimeout(() => {
                 loadNews();
-            }, 2000);
+            }, 4000);
 
             const welcomeMessage = `Chào mừng bạn đã đến với NGHE TIN NHANH . Nhấn giữ phím cách để nói.
                 Nói hướng dẫn để nghe hướng dẫn sử dụng. Đang tải tin tức, xin vui lòng chờ.`;
@@ -560,8 +612,8 @@ function App() {
                         <div className="accessibility-info">
                             Điều khiển lệnh thoại: <br></br>
                             <div className="info-widgets">
-                                <div>- đọc<br></br>- tiếp theo<br></br>- trước đó <br></br>- dừng lại<br></br></div>
-                                <div> - chuyên mục [tên] <br></br>- đọc bài [số thứ tự] <br></br> - đọc bài ngẫu nhiên  <br></br>- đọc tiêu đề <br></br> </div>
+                                <div> - đọc <br></br>- tiếp theo<br></br>- trước đó <br></br>- dừng lại<br></br>- đọc các tiêu đề</div>
+                                <div> - chuyên mục [tên] <br></br>- đọc bài [số thứ tự] <br></br> - đọc bài ngẫu nhiên  <br></br>- tìm kiếm [từ khóa] </div>
                             </div>
                         </div>
                         <WeatherDisplay/>
